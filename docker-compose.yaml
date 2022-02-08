@@ -1,0 +1,87 @@
+version: "3.8"
+services:
+
+  billing:
+    build:
+      dockerfile: ./Docker-Billing
+    container_name: 'billing-composed'
+    ports:
+      - "18084:80"
+      - "18085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "28085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    depends_on:
+      - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+
+  catalog:
+    build:
+      dockerfile: ./Docker-Catalog
+    container_name: 'catalog-composed'
+    ports:
+      - "28084:80"
+      - "28085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "28085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    depends_on:
+      - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+
+  order:
+    build:
+      dockerfile: ./Docker-Order
+    container_name: 'order-composed'
+    ports:
+      - "38084:80"
+      - "38085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "38085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    depends_on:
+      - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+
+  shipping:
+    build:
+      dockerfile: ./Docker-Shipping
+    container_name: 'shipping-composed'
+    ports:
+      - "48084:80"
+      - "48085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "48085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    depends_on:
+      - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+
+  warehouse:
+    build:
+      dockerfile: ./Docker-Warehouse
+    container_name: 'warehouse-composed'
+    ports:
+      - "8084:80"
+      - "8085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "8085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    depends_on:
+      - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/

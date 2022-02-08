@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/dotnet/sdk:6.0 as build-env
+
+WORKDIR /app
+COPY ./Shipping/Shipping.csproj /app/Shipping/
+COPY ./Shipping.Domain/Shipping.Domain.csproj /app/Shipping.Domain/
+COPY ./Shipping.Infrastructure/Shipping.Infrastructure.csproj /app/Shipping.Infrastructure/
+
+WORKDIR /app/Shipping.Infrastructure
+RUN dotnet restore
+
+WORKDIR /app/Shipping.Domain
+RUN dotnet restore
+
+WORKDIR /app/Shipping
+RUN dotnet restore
+
+WORKDIR /app
+COPY ./Shipping /app/Shipping/
+COPY ./Shipping.Domain /app/Shipping.Domain/
+COPY ./Shipping.Infrastructure /app/Shipping.Infrastructure/
+WORKDIR /app/Shipping
+RUN dotnet publish -c Release -o out
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0
+WORKDIR /app
+COPY --from=build-env /app/Shipping/out .
+ENTRYPOINT ["dotnet", "Shipping.dll"]

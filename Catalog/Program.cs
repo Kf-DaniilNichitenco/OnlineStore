@@ -23,10 +23,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUi3(s => s.ConfigureDefaults());
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();
