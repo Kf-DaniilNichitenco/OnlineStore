@@ -4,22 +4,37 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Order", "Order", "{FA641239-54FC-4D59-ABDA-270133A03F8B}"
+	ProjectSection(SolutionItems) = preProject
+		Docker-Order = Docker-Order
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Order", "Order\Order.csproj", "{D367085B-B8D7-474E-9316-2BC5E6798168}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Billing", "Billing", "{E03EE9DE-C3BE-4FBA-8155-F26CDA1ED213}"
+	ProjectSection(SolutionItems) = preProject
+		Docker-Billing = Docker-Billing
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Billing", "Billing\Billing.csproj", "{61CF707B-A2CC-47F8-9EDA-02A293A5B899}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shipping", "Shipping", "{17F207B6-AFD7-4996-A39F-931077830BF3}"
+	ProjectSection(SolutionItems) = preProject
+		Docker-Shipping = Docker-Shipping
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shipping", "Shipping\Shipping.csproj", "{F37F7EDE-A172-48D6-BEBE-38B05BDF3479}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Catalog", "Catalog", "{587C080E-ABB2-480C-861A-8E3F1A75F721}"
+	ProjectSection(SolutionItems) = preProject
+		Docker-Catalog = Docker-Catalog
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog", "Catalog\Catalog.csproj", "{CA82D374-0B0D-467F-AE45-94628854D6BD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Warehouse", "Warehouse", "{8D0B7485-7F77-4371-974C-3A8E668944DC}"
+	ProjectSection(SolutionItems) = preProject
+		Docker-Warehouse = Docker-Warehouse
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warehouse", "Warehouse\Warehouse.csproj", "{01DDA1F4-8989-453F-9F81-E01A4347AE83}"
 EndProject
@@ -42,6 +57,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shipping.Infrastructure", "Shipping.Infrastructure\Shipping.Infrastructure.csproj", "{07314611-DBF6-4A3B-9D7B-D28F798F0452}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Billing.Infrastructure", "Billing.Infrastructure\Billing.Infrastructure.csproj", "{3C896AC7-2588-4081-8A42-0595A44CE9A0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8D887EA7-D3C2-4E67-9940-35EF964B28EA}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yaml = docker-compose.yaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
