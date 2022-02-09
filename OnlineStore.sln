@@ -64,6 +64,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Auth", "Auth", "{D4B9A75B-A56E-445B-B209-00D444281B33}"
+	ProjectSection(SolutionItems) = preProject
+		Docker-Auth = Docker-Auth
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth", "Auth\Auth.csproj", "{B7E97585-7684-41A3-AC7F-2EE1B37A46D5}"
 EndProject

@@ -85,3 +85,20 @@ services:
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+
+  auth:
+    build:
+      dockerfile: ./Docker-Auth
+    container_name: 'auth-composed'
+    ports:
+      - "8084:80"
+      - "8085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "8085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    #depends_on:
+    #  - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
