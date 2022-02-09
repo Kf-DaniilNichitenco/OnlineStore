@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using Auth;
 using Auth.Data;
+using Auth.IdentityServices.AspNetIdentity;
 using Auth.Models;
 using IdentityServer4;
 using Microsoft.AspNetCore.Builder;
@@ -16,37 +17,20 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder();
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
-    .MinimumLevel.Override("System", LogEventLevel.Warning)
-    .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Information)
-    .Enrich.FromLogContext()
-    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Code)
-    .CreateLogger();
-
 AddServices(builder.Services, builder.Configuration);
+
+var app = builder.Build();
 
 try
 {
-    var seed = args.Contains("/seed");
-    if (seed)
-    {
-        args = args.Except(new[] { "/seed" }).ToArray();
-    }
+    Log.Information("Seeding database...");
 
-    var app = builder.Build();
+    var context = app.Services.GetService<ApplicationDbContext>();
+    var userManager = app.Services.GetService<UserManager>();
 
-    if (seed)
-    {
-        Log.Information("Seeding database...");
-        var config = app.Services.GetRequiredService<IConfiguration>();
-        var connectionString = config.GetConnectionString("IdentityServer");
-        SeedData.EnsureSeedData(connectionString);
-        Log.Information("Done seeding database.");
-        return 0;
-    }
+    await SeedData.EnsureSeedData(context, userManager);
+
+    Log.Information("Done seeding database.");
 
     if (app.Environment.IsDevelopment())
     {
@@ -80,6 +64,18 @@ finally
 
 void AddServices(IServiceCollection services, IConfiguration configuration)
 {
+    Log.Logger = new LoggerConfiguration()
+        .MinimumLevel.Debug()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+        .MinimumLevel.Override("System", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Information)
+        .Enrich.FromLogContext()
+        .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Code)
+        .CreateLogger();
+
+    services.AddSingleton(Log.Logger);
+
     services.AddControllersWithViews();
 
     services.AddDbContext<ApplicationDbContext>(options =>
@@ -87,6 +83,8 @@ void AddServices(IServiceCollection services, IConfiguration configuration)
 
     services.AddIdentity<User, Role>()
         .AddRoles<Role>()
+        .AddUserManager<UserManager>()
+        .AddRoleManager<RoleManager>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
 
@@ -105,8 +103,6 @@ void AddServices(IServiceCollection services, IConfiguration configuration)
         .AddInMemoryClients(Config.Clients)
         .AddAspNetIdentity<User>()
         .AddDeveloperSigningCredential();
-
-        
 
     services.AddAuthentication()
         .AddGoogle(options =>
