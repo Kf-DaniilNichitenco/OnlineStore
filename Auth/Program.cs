@@ -25,17 +25,14 @@ try
 {
     Log.Information("Seeding database...");
 
-    var context = app.Services.GetService<ApplicationDbContext>();
-    var userManager = app.Services.GetService<UserManager>();
-
-    await SeedData.EnsureSeedData(context, userManager);
+    await SeedData.EnsureSeedData(app.Services);
 
     Log.Information("Done seeding database.");
 
     if (app.Environment.IsDevelopment())
     {
         app.UseDeveloperExceptionPage();
-        app.UseDatabaseErrorPage();
+        app.UseDeveloperExceptionPage();
     }
 
     app.UseStaticFiles();
@@ -77,6 +74,8 @@ void AddServices(IServiceCollection services, IConfiguration configuration)
     services.AddSingleton(Log.Logger);
 
     services.AddControllersWithViews();
+
+    services.AddDatabaseDeveloperPageExceptionFilter();
 
     services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(configuration.GetConnectionString("IdentityServer")));

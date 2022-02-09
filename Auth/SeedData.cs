@@ -12,13 +12,19 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Auth.IdentityServices.AspNetIdentity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Auth
 {
     public class SeedData
     {
-        public static async Task EnsureSeedData(ApplicationDbContext context, UserManager userManager)
+        public static async Task EnsureSeedData(IServiceProvider serviceProvider)
         {
+            using var scope = serviceProvider.CreateScope();
+
+            ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            UserManager userManager = scope.ServiceProvider.GetRequiredService<UserManager>();
+
             await context.Database.MigrateAsync();
 
             var alice = await userManager.FindByNameAsync("alice");
