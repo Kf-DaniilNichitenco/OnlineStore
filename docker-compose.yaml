@@ -10,10 +10,10 @@ services:
       - "18085:443"
     environment:
       ASPNETCORE_URLS: "https://+;http://+"
-      ASPNETCORE_HTTPS_PORT: "28085"
+      ASPNETCORE_HTTPS_PORT: "18085"
       ASPNETCORE_ENVIRONMENT: "Development"
-    depends_on:
-      - envoygateway
+    #depends_on:
+    #  - envoygateway
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
@@ -46,8 +46,8 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "38085"
       ASPNETCORE_ENVIRONMENT: "Development"
-    depends_on:
-      - envoygateway
+    #depends_on:
+    #  - envoygateway
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
@@ -63,8 +63,8 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "48085"
       ASPNETCORE_ENVIRONMENT: "Development"
-    depends_on:
-      - envoygateway
+    #depends_on:
+    #  - envoygateway
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
@@ -74,14 +74,31 @@ services:
       dockerfile: ./Docker-Warehouse
     container_name: 'warehouse-composed'
     ports:
+      - "58084:80"
+      - "58085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "58085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    #depends_on:
+    #  - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+
+  auth:
+    build:
+      dockerfile: ./Docker-Auth
+    container_name: 'auth-composed'
+    ports:
       - "8084:80"
       - "8085:443"
     environment:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "8085"
       ASPNETCORE_ENVIRONMENT: "Development"
-    depends_on:
-      - envoygateway
+    #depends_on:
+    #  - envoygateway
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
