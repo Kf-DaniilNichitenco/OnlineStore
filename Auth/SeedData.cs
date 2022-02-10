@@ -12,20 +12,29 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Auth.IdentityServices.AspNetIdentity;
+using IdentityServer4.EntityFramework.DbContexts;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Auth
 {
     public class SeedData
     {
-        public static async Task EnsureSeedData(IServiceProvider serviceProvider)
+        public static async Task EnsureSeedDataAsync(IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
 
-            ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            UserManager userManager = scope.ServiceProvider.GetRequiredService<UserManager>();
+            var applicationDbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var configurationDbContext = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+            var persistedGrantDbContext = scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
 
-            await context.Database.MigrateAsync();
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+            var dropOnMigrate = configuration.GetValue<bool>("DropOnMigrate");
+
+            await PrepareDbContextsAsync(dropOnMigrate, applicationDbContext, configurationDbContext, persistedGrantDbContext);
+
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager>();
 
             var alice = await userManager.FindByNameAsync("alice");
             if (alice == null)
@@ -91,6 +100,22 @@ namespace Auth
             else
             {
                 Log.Debug("bob already exists");
+            }
+        }
+
+        private static async Task PrepareDbContextsAsync(bool dropOnMigrate, params DbContext[] contexts)
+        {
+            if (dropOnMigrate)
+            {
+                foreach (var dbContext in contexts)
+                {
+                    await dbContext.Database.EnsureDeletedAsync();
+                }
+            }
+
+            foreach (var dbContext in contexts)
+            {
+                await dbContext.Database.MigrateAsync();
             }
         }
     }
