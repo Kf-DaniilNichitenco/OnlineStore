@@ -5,36 +5,29 @@
 using Auth.Data;
 using Auth.Models;
 using IdentityModel;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using Auth.IdentityServices.AspNetIdentity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Auth
 {
     public class SeedData
     {
-        public static void EnsureSeedData(string connectionString)
+        public static async Task EnsureSeedData(IServiceProvider serviceProvider)
         {
-            var services = new ServiceCollection();
-            services.AddLogging();
-            services.AddDbContext<ApplicationDbContext>(options =>
-               options.UseSqlServer(connectionString));
+            using var scope = serviceProvider.CreateScope();
 
-            services.AddIdentity<User, Role>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+            ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            UserManager userManager = scope.ServiceProvider.GetRequiredService<UserManager>();
 
-            using var serviceProvider = services.BuildServiceProvider();
-            using var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
-            var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
-            context.Database.Migrate();
+            await context.Database.MigrateAsync();
 
-            var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-            var alice = userMgr.FindByNameAsync("alice").Result;
+            var alice = await userManager.FindByNameAsync("alice");
             if (alice == null)
             {
                 alice = new User
@@ -43,18 +36,18 @@ namespace Auth
                     Email = "AliceSmith@email.com",
                     EmailConfirmed = true,
                 };
-                var result = userMgr.CreateAsync(alice, "Pass123$").Result;
+                var result = await userManager.CreateAsync(alice, "Pass123$");
                 if (!result.Succeeded)
                 {
                     throw new Exception(result.Errors.First().Description);
                 }
 
-                result = userMgr.AddClaimsAsync(alice, new Claim[]{
-                    new Claim(JwtClaimTypes.Name, "Alice Smith"),
-                    new Claim(JwtClaimTypes.GivenName, "Alice"),
-                    new Claim(JwtClaimTypes.FamilyName, "Smith"),
-                    new Claim(JwtClaimTypes.WebSite, "http://alice.com"),
-                }).Result;
+                result = await userManager.AddClaimsAsync(alice, new Claim[]{
+                    new(JwtClaimTypes.Name, "Alice Smith"),
+                    new(JwtClaimTypes.GivenName, "Alice"),
+                    new(JwtClaimTypes.FamilyName, "Smith"),
+                    new(JwtClaimTypes.WebSite, "http://alice.com"),
+                });
                 if (!result.Succeeded)
                 {
                     throw new Exception(result.Errors.First().Description);
@@ -66,7 +59,7 @@ namespace Auth
                 Log.Debug("alice already exists");
             }
 
-            var bob = userMgr.FindByNameAsync("bob").Result;
+            var bob = userManager.FindByNameAsync("bob").Result;
             if (bob == null)
             {
                 bob = new User
@@ -75,19 +68,20 @@ namespace Auth
                     Email = "BobSmith@email.com",
                     EmailConfirmed = true
                 };
-                var result = userMgr.CreateAsync(bob, "Pass123$").Result;
+                var result = userManager.CreateAsync(bob, "Pass123$").Result;
                 if (!result.Succeeded)
                 {
                     throw new Exception(result.Errors.First().Description);
                 }
 
-                result = userMgr.AddClaimsAsync(bob, new Claim[]{
-                    new Claim(JwtClaimTypes.Name, "Bob Smith"),
-                    new Claim(JwtClaimTypes.GivenName, "Bob"),
-                    new Claim(JwtClaimTypes.FamilyName, "Smith"),
-                    new Claim(JwtClaimTypes.WebSite, "http://bob.com"),
-                    new Claim("location", "somewhere")
-                }).Result;
+                result = await userManager.AddClaimsAsync(bob, new Claim[]{
+                    new(JwtClaimTypes.Name, "Bob Smith"),
+                    new(JwtClaimTypes.GivenName, "Bob"),
+                    new(JwtClaimTypes.FamilyName, "Smith"),
+                    new(JwtClaimTypes.WebSite, "http://bob.com"),
+                    new("location", "somewhere")
+                });
+
                 if (!result.Succeeded)
                 {
                     throw new Exception(result.Errors.First().Description);
