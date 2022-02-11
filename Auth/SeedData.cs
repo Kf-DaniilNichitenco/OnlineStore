@@ -1,18 +1,15 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
-
-using Auth.Data;
+﻿using Auth.Data;
 using Auth.Models;
 using IdentityModel;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Auth.IdentityServices.AspNetIdentity;
 using IdentityServer4.EntityFramework.DbContexts;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -35,72 +32,123 @@ namespace Auth
             await PrepareDbContextsAsync(dropOnMigrate, applicationDbContext, configurationDbContext, persistedGrantDbContext);
 
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager>();
 
-            var alice = await userManager.FindByNameAsync("alice");
-            if (alice == null)
+            await SeedRoles(roleManager);
+            await SeedUsers(userManager);
+        }
+
+        private static async Task SeedRoles(RoleManager roleManager)
+        {
+            var results = new List<IdentityResult>
             {
-                alice = new User
-                {
-                    UserName = "alice",
-                    Email = "AliceSmith@email.com",
-                    EmailConfirmed = true,
-                };
-                var result = await userManager.CreateAsync(alice, "Pass123$");
-                if (!result.Succeeded)
-                {
-                    throw new Exception(result.Errors.First().Description);
-                }
+                await roleManager.CreateIfNotExistAsync("admin"),
+                await roleManager.CreateIfNotExistAsync("vendor"),
+                await roleManager.CreateIfNotExistAsync("buyer")
+            };
 
-                result = await userManager.AddClaimsAsync(alice, new Claim[]{
-                    new(JwtClaimTypes.Name, "Alice Smith"),
-                    new(JwtClaimTypes.GivenName, "Alice"),
-                    new(JwtClaimTypes.FamilyName, "Smith"),
-                    new(JwtClaimTypes.WebSite, "http://alice.com"),
-                });
-                if (!result.Succeeded)
-                {
-                    throw new Exception(result.Errors.First().Description);
-                }
-                Log.Debug("alice created");
-            }
-            else
+            if (results.Any(x => !x.Succeeded))
             {
-                Log.Debug("alice already exists");
+                throw new InvalidOperationException("Could not create new role");
             }
+        }
 
-            var bob = userManager.FindByNameAsync("bob").Result;
-            if (bob == null)
+        private static async Task SeedUsers(UserManager userManager)
+        {
+            IdentityResult? result = null;
+
+            #region Create admin user
+
+            var adminUser = new User
             {
-                bob = new User
-                {
-                    UserName = "bob",
-                    Email = "BobSmith@email.com",
-                    EmailConfirmed = true
-                };
-                var result = userManager.CreateAsync(bob, "Pass123$").Result;
-                if (!result.Succeeded)
-                {
-                    throw new Exception(result.Errors.First().Description);
-                }
+                UserName = "admin123",
+                Email = "admin@gmail.com",
+                EmailConfirmed = true,
+            };
 
-                result = await userManager.AddClaimsAsync(bob, new Claim[]{
-                    new(JwtClaimTypes.Name, "Bob Smith"),
-                    new(JwtClaimTypes.GivenName, "Bob"),
-                    new(JwtClaimTypes.FamilyName, "Smith"),
-                    new(JwtClaimTypes.WebSite, "http://bob.com"),
-                    new("location", "somewhere")
-                });
-
-                if (!result.Succeeded)
-                {
-                    throw new Exception(result.Errors.First().Description);
-                }
-                Log.Debug("bob created");
-            }
-            else
+            var adminClaims = new List<Claim>
             {
-                Log.Debug("bob already exists");
+                new(JwtClaimTypes.Name, "Firstname Lastname"),
+                new(JwtClaimTypes.GivenName, "Firstname")
+            };
+
+            result = await userManager.CreateIfNotExistAsync(adminUser, "123Qwerty_", adminClaims);
+
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Could not create admin user");
             }
+
+            result = await userManager.AddToRoleAsync(adminUser, "admin");
+
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Could not add admin user to role");
+            }
+
+            #endregion
+
+            #region Create vendor user
+
+            var vendorUser = new User
+            {
+                UserName = "vendor123",
+                Email = "vendor@gmail.com",
+                EmailConfirmed = true,
+            };
+
+            var vendorClaims = new List<Claim>
+            {
+                new(JwtClaimTypes.Name, "Firstname Lastname"),
+                new(JwtClaimTypes.GivenName, "Firstname")
+            };
+
+            result = await userManager.CreateIfNotExistAsync(vendorUser, "123Qwerty_", vendorClaims);
+
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Could not create vendor user");
+            }
+
+            result = await userManager.AddToRoleAsync(vendorUser, "vendor");
+
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Could not add vendor user to role");
+            }
+
+            #endregion
+
+            #region Create buyer user
+
+            var buyerUser = new User
+            {
+                UserName = "buyer123",
+                Email = "buyer@gmail.com",
+                EmailConfirmed = true,
+            };
+
+            var buyerClaims = new List<Claim>
+            {
+                new(JwtClaimTypes.Name, "Firstname Lastname"),
+                new(JwtClaimTypes.GivenName, "Firstname")
+            };
+
+            result = await userManager.CreateIfNotExistAsync(buyerUser, "123Qwerty_", buyerClaims);
+
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Could not create buyer user");
+            }
+
+            result = await userManager.AddToRoleAsync(buyerUser, "buyer");
+
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Could not add buyer user to role");
+            }
+
+            #endregion
         }
 
         private static async Task PrepareDbContextsAsync(bool dropOnMigrate, params DbContext[] contexts)
