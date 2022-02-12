@@ -9,9 +9,15 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Auth.IdentityServices.AspNetIdentity;
 using IdentityServer4.EntityFramework.DbContexts;
+using IdentityServer4.EntityFramework.Entities;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ApiResource = IdentityServer4.EntityFramework.Entities.ApiResource;
+using ApiScope = IdentityServer4.EntityFramework.Entities.ApiScope;
+using Client = IdentityServer4.EntityFramework.Entities.Client;
+using IdentityResource = IdentityServer4.EntityFramework.Entities.IdentityResource;
 
 namespace Auth
 {
@@ -27,15 +33,250 @@ namespace Auth
 
             var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager>();
+
             var dropOnMigrate = configuration.GetValue<bool>("DropOnMigrate");
 
             await PrepareDbContextsAsync(dropOnMigrate, applicationDbContext, configurationDbContext, persistedGrantDbContext);
 
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager>();
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager>();
-
             await SeedRoles(roleManager);
             await SeedUsers(userManager);
+
+            await SeedIdentityServer(configurationDbContext);
+        }
+
+        private static async Task SeedIdentityServer(ConfigurationDbContext configurationDbContext)
+        {
+            if (!configurationDbContext.IdentityResources.Any())
+            {
+                await SeedIdentityResources(configurationDbContext);
+            }
+
+            if (!configurationDbContext.ApiResources.Any())
+            {
+                await SeedApiResources(configurationDbContext);
+            }
+
+            if (!configurationDbContext.ApiScopes.Any())
+            {
+                await SeedScopes(configurationDbContext);
+            }
+
+            if (!configurationDbContext.Clients.Any())
+            {
+                await SeedClients(configurationDbContext);
+            }
+
+            await configurationDbContext.SaveChangesAsync();
+        }
+
+        private static async Task SeedScopes(ConfigurationDbContext configurationDbContext)
+        {
+            await configurationDbContext.ApiScopes.AddRangeAsync(new List<ApiScope>
+            {
+                new()
+                {
+                    Name = "read"
+                },
+                new()
+                {
+                    Name = "write"
+                },
+                new()
+                {
+                    Name = "full"
+                },
+                new()
+                {
+                    Name = "openid"
+                },
+                new()
+                {
+                    Name = "offline_access"
+                },
+                new()
+                {
+                    Name = "profile"
+                },
+            });
+        }
+
+        private static async Task SeedClients(ConfigurationDbContext configurationDbContext)
+        {
+            var client = new Client
+            {
+                ClientId = "6A491EB6-99A7-4277-9884-72904DF2BA9A",
+                ClientName = "Online Shop Client",
+                ClientUri = "https://localhost:4200",
+                AllowedGrantTypes = new List<ClientGrantType>
+                {
+                    new()
+                    {
+                        GrantType = GrantType.AuthorizationCode
+                    }
+                },
+                RequirePkce = true,
+                AllowOfflineAccess = true,
+                ClientSecrets = new List<ClientSecret>
+                {
+                    new()
+                    {
+                        Value = "6FF4EC10-OnlineShop-4BFD-Client-8532-351C6D056462".ToSha256()
+                    }
+                },
+                RequireClientSecret = true,
+                AlwaysIncludeUserClaimsInIdToken = true,
+                AllowedScopes = new List<ClientScope>
+                {
+                    new()
+                    {
+                        Scope = "full"
+                    },
+
+                    new()
+                    {
+                        Scope = "read"
+                    },
+
+                    new()
+                    {
+                        Scope = "write"
+                    },
+
+                    new()
+                    {
+                        Scope = "openid"
+                    },
+
+                    new()
+                    {
+                        Scope = "offline_access"
+                    },
+
+                    new()
+                    {
+                        Scope = "profile"
+                    }
+                }
+            };
+
+            client.RedirectUris = new List<ClientRedirectUri>()
+            {
+                new()
+                {
+                    RedirectUri = "https://localhost:4200/home",
+                    Client = client
+                },
+                new()
+                {
+                    RedirectUri = "https://localhost:4200/auth/signin-callback",
+                    Client = client
+                },
+                new()
+                {
+                    RedirectUri = "https://localhost:4200/auth/signup-callback",
+                    Client = client
+                }
+            };
+
+            client.PostLogoutRedirectUris = new List<ClientPostLogoutRedirectUri>()
+            {
+                new() {PostLogoutRedirectUri = "https://localhost:4200/auth/signout-callback", Client = client}
+            };
+
+            await configurationDbContext.Clients.AddAsync(client);
+
+            await configurationDbContext.ClientCorsOrigins.AddAsync(new ClientCorsOrigin
+            {
+                Client = client,
+                Origin = "https://localhost:4200"
+            });
+        }
+
+        private static async Task SeedApiResources(ConfigurationDbContext configurationDbContext)
+        {
+            await configurationDbContext.ApiResources.AddAsync(
+                new ApiResource
+                {
+                    Name = "Auth",
+                    DisplayName = "Auth service",
+                    Secrets = new List<ApiResourceSecret>
+                    {
+                        new()
+                        {
+                            Value = "A1837CD3-Auth-5340-API-4B40-Service-BE7C-55E5B5C9FAAB".ToSha256()
+                        }
+                    },
+                    Scopes = new List<ApiResourceScope>
+                    {
+                        new()
+                        {
+                            Scope = "profile"
+                        },
+                        new()
+                        {
+                            Scope = "read"
+                        },
+                        new()
+                        {
+                            Scope = "write"
+                        },
+                        new()
+                        {
+                            Scope = "full"
+                        },
+                        new()
+                        {
+                            Scope = "openid"
+                        },
+                        new()
+                        {
+                            Scope = "offline_access"
+                        }
+                    }
+                });
+        }
+
+        private static async Task SeedIdentityResources(ConfigurationDbContext configurationDbContext)
+        {
+            var resources = new IdentityResource[]
+            {
+                new()
+                {
+                    Name = "profile",
+                    UserClaims = new List<IdentityResourceClaim>
+                    {
+                        new()
+                        {
+                            Type = "name"
+                        },
+                        new()
+                        {
+                            Type = "email"
+                        },
+                        new()
+                        {
+                            Type = "website"
+                        }
+                    },
+                    DisplayName = "Your profile data"
+                },
+                new()
+                {
+                    Name = "openid",
+                    UserClaims = new List<IdentityResourceClaim>
+                    {
+                        new()
+                        {
+                            Type = "sub"
+                        }
+                    },
+                    DisplayName = "Your user identifier"
+                }
+            };
+
+            await configurationDbContext.IdentityResources.AddRangeAsync(resources);
         }
 
         private static async Task SeedRoles(RoleManager roleManager)
