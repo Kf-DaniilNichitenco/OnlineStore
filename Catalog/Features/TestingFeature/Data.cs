@@ -1,7 +1,6 @@
-﻿namespace Catalog.Features.TestingFeature
-{
-    public static class Data
-    {
+﻿namespace Catalog.Features.TestingFeature;
 
-    }
+public static class Data
+{
+
 }

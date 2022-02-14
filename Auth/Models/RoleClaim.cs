@@ -1,10 +1,9 @@
 ﻿using System;
 using Microsoft.AspNetCore.Identity;
 
-namespace Auth.Models
+namespace Auth.Models;
+
+public class RoleClaim : IdentityRoleClaim<Guid>
 {
-    public class RoleClaim : IdentityRoleClaim<Guid>
-    {
         
-    }
 }

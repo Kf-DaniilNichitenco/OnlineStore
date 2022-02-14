@@ -1,7 +1,6 @@
-﻿namespace Billing.Infrastructure.Entities
+﻿namespace Billing.Infrastructure.Entities;
+
+public interface IBaseEntity
 {
-    public interface IBaseEntity
-    {
-        Guid Id { get; set; }
-    }
+    Guid Id { get; set; }
 }

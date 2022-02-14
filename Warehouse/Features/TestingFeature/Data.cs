@@ -1,7 +1,6 @@
-﻿namespace Warehouse.Features.TestingFeature
-{
-    public static class Data
-    {
+﻿namespace Warehouse.Features.TestingFeature;
 
-    }
+public static class Data
+{
+
 }

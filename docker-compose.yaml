@@ -107,6 +107,8 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "8085"
       ASPNETCORE_ENVIRONMENT: "Development"
+      OnlineStoreClientHost: "onlinestore-composed"
+      OnlineStoreClientPort: "4200"
     #depends_on:
     #  - envoygateway
     volumes:
@@ -115,13 +117,13 @@ services:
     networks:
     - online-store
 
-  onlineshop:
+  onlinestore:
     container_name: onlinestore-composed
     build:
       context: ./Clients/
       dockerfile: ./OnlineStore-Docker
     volumes:
-      - './Clients/OnlineShop/:/usr/src/app/'
+      - './Clients/OnlineStore/:/usr/src/app/'
     ports:
       - '4200:80'
     networks:

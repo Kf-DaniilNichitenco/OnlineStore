@@ -4,7 +4,8 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using System;
-using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Auth;
 using Auth.Data;
 using Auth.IdentityServices.AspNetIdentity;
@@ -17,33 +18,15 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder();
 
-AddServices(builder.Services, builder.Configuration);
+RegisterServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
 try
 {
-    Log.Information("Seeding database...");
+    await SeedDatabaseAsync();
 
-    await SeedData.EnsureSeedData(app.Services);
-
-    Log.Information("Done seeding database.");
-
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseDeveloperExceptionPage();
-        app.UseDeveloperExceptionPage();
-    }
-
-    app.UseStaticFiles();
-
-    app.UseRouting();
-    app.UseIdentityServer();
-    app.UseAuthorization();
-    app.UseEndpoints(endpoints =>
-    {
-        endpoints.MapDefaultControllerRoute();
-    });
+    ConfigurePipeline();
 
     Log.Information("Starting host...");
     app.Run();
@@ -59,8 +42,12 @@ finally
     Log.CloseAndFlush();
 }
 
-void AddServices(IServiceCollection services, IConfiguration configuration)
+void RegisterServices(IServiceCollection services, IConfiguration configuration)
 {
+    var connectionString = configuration.GetConnectionString("IdentityServer");
+
+    var migrationsAssembly = typeof(ApplicationDbContext).GetTypeInfo().Assembly.GetName().Name;
+
     Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Debug()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -78,7 +65,7 @@ void AddServices(IServiceCollection services, IConfiguration configuration)
     services.AddDatabaseDeveloperPageExceptionFilter();
 
     services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(configuration.GetConnectionString("IdentityServer")));
+        options.UseSqlServer(connectionString));
 
     services.AddIdentity<User, Role>()
         .AddRoles<Role>()
@@ -97,11 +84,24 @@ void AddServices(IServiceCollection services, IConfiguration configuration)
         // see https://identityserver4.readthedocs.io/en/latest/topics/resources.html
         options.EmitStaticAudienceClaim = true;
     })
-    .AddInMemoryIdentityResources(Config.IdentityResources)
-        .AddInMemoryApiScopes(Config.ApiScopes)
-        .AddInMemoryClients(Config.Clients)
-        .AddAspNetIdentity<User>()
-        .AddDeveloperSigningCredential();
+    .AddConfigurationStore(options =>
+    {
+        options.ConfigureDbContext = optionsBuilder => optionsBuilder.UseSqlServer(
+            connectionString,
+            opt => opt.MigrationsAssembly(migrationsAssembly)
+        );
+        options.DefaultSchema = "is4";
+    })
+    .AddOperationalStore(options =>
+    {
+        options.ConfigureDbContext = optionsBuilder => optionsBuilder.UseSqlServer(
+            connectionString,
+            opt => opt.MigrationsAssembly(migrationsAssembly)
+        );
+        options.DefaultSchema = "is4";
+    })
+    .AddAspNetIdentity<User>()
+    .AddDeveloperSigningCredential();
 
     services.AddAuthentication()
         .AddGoogle(options =>
@@ -114,4 +114,34 @@ void AddServices(IServiceCollection services, IConfiguration configuration)
             options.ClientId = "copy client ID from Google here";
             options.ClientSecret = "copy client secret from Google here";
         });
+}
+
+async Task SeedDatabaseAsync()
+{
+    Log.Information("Seeding database...");
+
+    await SeedData.EnsureSeedDataAsync(app.Services);
+
+    Log.Information("Done seeding database.");
+}
+
+void ConfigurePipeline()
+{
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+        app.UseDeveloperExceptionPage();
+    }
+
+    app.UseStaticFiles();
+
+    app.UseRouting();
+    app.UseIdentityServer();
+    app.UseAuthorization();
+
+    app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapDefaultControllerRoute();
+    });
+
 }
