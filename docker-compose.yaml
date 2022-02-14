@@ -17,6 +17,8 @@ services:
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+      - online-store
 
   catalog:
     build:
@@ -34,6 +36,8 @@ services:
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+      - online-store
 
   order:
     build:
@@ -51,6 +55,8 @@ services:
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+      - online-store
 
   shipping:
     build:
@@ -68,6 +74,8 @@ services:
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+      - online-store
 
   warehouse:
     build:
@@ -85,6 +93,8 @@ services:
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+      - online-store
 
   auth:
     build:
@@ -102,3 +112,22 @@ services:
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+    - online-store
+
+  onlineshop:
+    container_name: onlinestore-composed
+    build:
+      context: ./Clients/
+      dockerfile: ./OnlineStore-Docker
+    volumes:
+      - './Clients/OnlineShop/:/usr/src/app/'
+    ports:
+      - '4200:80'
+    networks:
+    - online-store
+
+networks:
+  online-store:
+    name: online-store
+    driver: bridge
