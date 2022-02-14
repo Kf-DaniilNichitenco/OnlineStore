@@ -1,7 +1,6 @@
-﻿namespace Warehouse.Infrastructure.Entities
+﻿namespace Warehouse.Infrastructure.Entities;
+
+public interface IBaseEntity
 {
-    public interface IBaseEntity
-    {
-        Guid Id { get; set; }
-    }
+    Guid Id { get; set; }
 }

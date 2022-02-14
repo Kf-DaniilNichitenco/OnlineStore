@@ -1,7 +1,6 @@
-﻿namespace Order.Infrastructure.Entities
+﻿namespace Order.Infrastructure.Entities;
+
+public interface IBaseEntity
 {
-    public interface IBaseEntity
-    {
-        Guid Id { get; set; }
-    }
+    Guid Id { get; set; }
 }

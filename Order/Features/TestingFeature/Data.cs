@@ -1,7 +1,6 @@
-﻿namespace Order.Features.TestingFeature
-{
-    public static class Data
-    {
+﻿namespace Order.Features.TestingFeature;
 
-    }
+public static class Data
+{
+
 }

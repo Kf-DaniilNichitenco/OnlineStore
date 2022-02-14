@@ -1,7 +1,6 @@
-﻿namespace Billing.Features.TestingFeature
-{
-    public static class Data
-    {
+﻿namespace Billing.Features.TestingFeature;
 
-    }
+public static class Data
+{
+
 }
