@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/dotnet/sdk:6.0 as build-env
+
+WORKDIR /app
+COPY ./Warehouse/Warehouse.csproj /app/Warehouse/
+COPY ./Warehouse.Domain/Warehouse.Domain.csproj /app/Warehouse.Domain/
+COPY ./Warehouse.Infrastructure/Warehouse.Infrastructure.csproj /app/Warehouse.Infrastructure/
+
+WORKDIR /app/Warehouse.Infrastructure
+RUN dotnet restore
+
+WORKDIR /app/Warehouse.Domain
+RUN dotnet restore
+
+WORKDIR /app/Warehouse
+RUN dotnet restore
+
+WORKDIR /app
+COPY ./Warehouse /app/Warehouse/
+COPY ./Warehouse.Domain /app/Warehouse.Domain/
+COPY ./Warehouse.Infrastructure /app/Warehouse.Infrastructure/
+WORKDIR /app/Warehouse
+RUN dotnet publish -c Release -o out
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0
+WORKDIR /app
+COPY --from=build-env /app/Warehouse/out .
+ENTRYPOINT ["dotnet", "Warehouse.dll"]

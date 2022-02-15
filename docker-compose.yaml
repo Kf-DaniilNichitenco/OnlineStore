@@ -1,0 +1,149 @@
+version: "3.8"
+services:
+
+  billing:
+    build:
+      dockerfile: ./Docker-Billing
+    container_name: 'billing-composed'
+    ports:
+      - "18084:80"
+      - "18085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "18085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    #depends_on:
+    #  - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+      - online-store
+
+  catalog:
+    build:
+      dockerfile: ./Docker-Catalog
+    container_name: 'catalog-composed'
+    ports:
+      - "28084:80"
+      - "28085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "28085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    #depends_on:
+    #  - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+      - online-store
+
+  order:
+    build:
+      dockerfile: ./Docker-Order
+    container_name: 'order-composed'
+    ports:
+      - "38084:80"
+      - "38085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "38085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    #depends_on:
+    #  - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+      - online-store
+
+  shipping:
+    build:
+      dockerfile: ./Docker-Shipping
+    container_name: 'shipping-composed'
+    ports:
+      - "48084:80"
+      - "48085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "48085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    #depends_on:
+    #  - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+      - online-store
+
+  warehouse:
+    build:
+      dockerfile: ./Docker-Warehouse
+    container_name: 'warehouse-composed'
+    ports:
+      - "58084:80"
+      - "58085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "58085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    #depends_on:
+    #  - envoygateway
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+    networks:
+      - online-store
+
+  auth:
+    build:
+      dockerfile: ./Docker-Auth
+    container_name: 'auth-composed'
+    ports:
+      - "8084:80"
+      - "8085:443"
+    environment:
+      ASPNETCORE_URLS: "https://+;http://+"
+      ASPNETCORE_HTTPS_PORT: "8085"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      OnlineStoreClientHost: "onlinestore-composed"
+      OnlineStoreClientPort: "4200"
+      ConnectionStrings:IdentityServer: "Server=auth-sql-server;Database=OnlineStore.Auth;User Id=sa;Password=123Qwerty_;"
+    depends_on:
+      - auth-sql-server
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+      - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+      - ./wait-for-it.sh:/root/wait-for-it.sh
+    networks:
+    - online-store
+
+  auth-sql-server:
+    container_name: auth-sql-server
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "123Qwerty_"
+      ACCEPT_EULA: "Y"
+    networks:
+    - online-store
+
+
+  onlinestore:
+    container_name: onlinestore-composed
+    build:
+      context: ./Clients/
+      dockerfile: ./OnlineStore-Docker
+    volumes:
+      - './Clients/OnlineStore/:/usr/src/app/'
+    ports:
+      - '4200:80'
+    networks:
+    - online-store
+
+networks:
+  online-store:
+    name: online-store
+    driver: bridge

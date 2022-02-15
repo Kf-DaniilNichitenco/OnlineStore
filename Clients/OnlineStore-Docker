@@ -1,0 +1,10 @@
+FROM node:16 as node
+WORKDIR /app
+COPY ./OnlineStore/ /app/
+
+RUN npm install -g @angular/cli @angular-devkit/build-angular && npm install
+RUN npm run build --prod
+
+FROM nginx:alpine
+COPY --from=node /app/dist/OnlineStore /usr/share/nginx/html
+COPY --from=node /app/nginx.conf /etc/nginx/conf.d/default.conf

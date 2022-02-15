@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/dotnet/sdk:6.0 as build-env
+
+WORKDIR /app
+COPY ./Order/Order.csproj /app/Order/
+COPY ./Order.Domain/Order.Domain.csproj /app/Order.Domain/
+COPY ./Order.Infrastructure/Order.Infrastructure.csproj /app/Order.Infrastructure/
+
+WORKDIR /app/Order.Infrastructure
+RUN dotnet restore
+
+WORKDIR /app/Order.Domain
+RUN dotnet restore
+
+WORKDIR /app/Order
+RUN dotnet restore
+
+WORKDIR /app
+COPY ./Order /app/Order/
+COPY ./Order.Domain /app/Order.Domain/
+COPY ./Order.Infrastructure /app/Order.Infrastructure/
+WORKDIR /app/Order
+RUN dotnet publish -c Release -o out
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0
+WORKDIR /app
+COPY --from=build-env /app/Order/out .
+ENTRYPOINT ["dotnet", "Order.dll"]
