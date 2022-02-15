@@ -31,8 +31,8 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "28085"
       ASPNETCORE_ENVIRONMENT: "Development"
-    depends_on:
-      - envoygateway
+    #depends_on:
+    #  - envoygateway
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
@@ -109,13 +109,27 @@ services:
       ASPNETCORE_ENVIRONMENT: "Development"
       OnlineStoreClientHost: "onlinestore-composed"
       OnlineStoreClientPort: "4200"
-    #depends_on:
-    #  - envoygateway
+      ConnectionStrings:IdentityServer: "Server=auth-sql-server;Database=OnlineStore.Auth;User Id=sa;Password=123Qwerty_;"
+    depends_on:
+      - auth-sql-server
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
+      - ./wait-for-it.sh:/root/wait-for-it.sh
     networks:
     - online-store
+
+  auth-sql-server:
+    container_name: auth-sql-server
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "123Qwerty_"
+      ACCEPT_EULA: "Y"
+    networks:
+    - online-store
+
 
   onlinestore:
     container_name: onlinestore-composed
