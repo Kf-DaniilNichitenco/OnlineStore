@@ -54,14 +54,14 @@ export class AuthService {
     })
   }
 
-  public finishLogin = (): Promise<User> => {
+  public finishLogin = (): Promise<User | void> => {
     return this._userManager.signinRedirectCallback()
     .then(user => {
       this._user = user;
       console.log(user);
       this._loginChangedSubject.next(this.checkUser(user));
       return user;
-    })
+    });
   }
 
   public logout = () => {

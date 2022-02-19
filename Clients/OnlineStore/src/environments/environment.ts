@@ -6,8 +6,8 @@ export const environment = {
   production: false,
   clientRoot: "http://localhost:4200",
   idpAuthority: "https://localhost:5001",
-  clientId: "",
-  clientSecret: "",
+  clientId: "6A491EB6-99A7-4277-9884-72904DF2BA9A",
+  clientSecret: "6FF4EC10-OnlineStore-4BFD-Client-8532-351C6D056462",
 };
 
 /*
