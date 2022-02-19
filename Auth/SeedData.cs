@@ -101,15 +101,7 @@ public class SeedData
             },
             new()
             {
-                Name = Scopes.OpenId
-            },
-            new()
-            {
                 Name = Scopes.OfflineAccess
-            },
-            new()
-            {
-                Name = Scopes.Profile
             }
         });
     }

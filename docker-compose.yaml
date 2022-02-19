@@ -107,7 +107,7 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "8085"
       ASPNETCORE_ENVIRONMENT: "Development"
-      OnlineStoreClientHost: "onlinestore-composed"
+      OnlineStoreClientHost: "localhost"
       OnlineStoreClientPort: "4200"
       ConnectionStrings:IdentityServer: "Server=auth-sql-server;Database=OnlineStore.Auth;User Id=sa;Password=123Qwerty_;"
     depends_on:
@@ -135,11 +135,11 @@ services:
     container_name: onlinestore-composed
     build:
       context: ./Clients/
-      dockerfile: ./OnlineStore-Docker
+      dockerfile: ./OnlineStore-Docker.development
     volumes:
       - './Clients/OnlineStore/:/usr/src/app/'
     ports:
-      - '4200:80'
+      - '4200:4200'
     networks:
     - online-store
 

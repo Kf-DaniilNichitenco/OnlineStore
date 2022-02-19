@@ -3,7 +3,11 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  clientRoot: "http://localhost:4200",
+  idpAuthority: "https://localhost:5001",
+  clientId: "",
+  clientSecret: "",
 };
 
 /*
