@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthModule } from './modules/pages/auth/auth.module';
+import { AngularMaterialModule } from './modules/angular-material/angular-material.module';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { AuthModule } from './modules/pages/auth/auth.module';
     AppRoutingModule,
     HttpClientModule,
     AuthModule,
-    RouterModule
+    RouterModule,
+    AngularMaterialModule
   ],
   providers: [],
   bootstrap: [AppComponent]
