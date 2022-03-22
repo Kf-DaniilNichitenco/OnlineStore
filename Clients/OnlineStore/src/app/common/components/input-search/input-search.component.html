@@ -1,0 +1,17 @@
+<mat-form-field appearance="outline">
+  <input type="text" matInput [(ngModel)]="inputValue" (input)="onChangeInput()" (keyup.enter)="onSearch(inputValue)" [matAutocomplete]="auto" placeholder="Search">
+  <mat-autocomplete #auto="matAutocomplete">
+    <mat-option (click)="onSelect(item)" *ngFor="let item of items.items" [value]="item.id">{{item.displayedName}}</mat-option>
+  </mat-autocomplete>
+  <button (click)="onSearch(inputValue)" matSuffix mat-icon-button color="primary"><mat-icon>search</mat-icon></button>
+</mat-form-field>
+
+<!-- <mat-form-field appearance="outline">
+  <mat-label>State</mat-label>
+  <mat-select>
+    <input (keyup)="onKey($event)" matInput type="search" placeholder="Search"> // **Send user input to TS**
+    <mat-option>None</mat-option>
+    <mat-option *ngFor="let state of selectedStates" [value]="state">{{state}}</mat-option>
+  </mat-select>
+  <button matSuffix mat-icon-button color="primary"><mat-icon>search</mat-icon></button>
+</mat-form-field> -->

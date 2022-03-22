@@ -15,12 +15,12 @@ export class AuthService {
 
   public loginChanged = this._loginChangedSubject.asObservable();
 
-  constructor(private _http: HttpClient) {
+  constructor() {
     this._userManager = new UserManager(this.idpSettings);
   }
 
-  public login = () => {
-    return this._userManager.signinRedirect();
+  public login = async (): Promise<void> => {
+    return await this._userManager.signinRedirect();
   }
 
   public signup = () => {
@@ -29,48 +29,49 @@ export class AuthService {
     //   .then(_ => this.login());
   }
 
-  public getAccessToken = (): Promise<string | null> => {
-    return this._userManager.getUser()
-      .then(user => {
-         return !!user && !user.expired ? user.access_token : null;
-    });
+  public getAccessToken = async (): Promise<string | null> => {
+    const user = await this._userManager.getUser();
+    return !!user && !user.expired ? user.access_token : null;
   }
 
-  public getRefreshToken = (): Promise<string | null> => {
-    return this._userManager.getUser()
-      .then(user => {
-         return !!user && !!user.refresh_token ? user.refresh_token : null;
-    });
+  public getRefreshToken = async (): Promise<string | null> => {
+    const user = await this._userManager.getUser();
+    return !!user && !!user.refresh_token ? user.refresh_token : null;
   }
 
-  public isAuthenticated = (): Promise<boolean> => {
-    return this._userManager.getUser()
-    .then(user => {
-      if(this._user !== user){
-        this._loginChangedSubject.next(user !== null && this.checkUser(user));
-      }
+  public isAuthenticated = async (): Promise<boolean> => {
+    const user = await this._userManager.getUser();
+    if (this._user !== user) {
+      this._loginChangedSubject.next(user !== null && this.checkUser(user));
+    }
 
-      return this.checkUser(this._user);
-    })
+    return this.checkUser(this._user);
   }
 
-  public finishLogin = (): Promise<User> => {
-    return this._userManager.signinRedirectCallback()
-    .then(user => {
+  public finishLogin = async (): Promise<User | null> => {
+    try {
+      const user: User = await this._userManager.signinRedirectCallback();
+
       this._user = user;
       console.log(user);
       this._loginChangedSubject.next(this.checkUser(user));
+
       return user;
-    })
+    } catch (error: any) {
+      console.error(error);
+
+      return null;
+    }
   }
 
   public logout = () => {
     this._userManager.signoutRedirect();
   }
 
-  public finishLogout = () => {
+  public finishLogout = async () => {
+    const res = await this._userManager.signoutRedirectCallback();
     this._user = undefined;
-    return this._userManager.signoutRedirectCallback();
+    return res;
   }
 
   private checkUser = (user?: User): boolean => {

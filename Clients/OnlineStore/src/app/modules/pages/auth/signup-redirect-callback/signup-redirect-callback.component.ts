@@ -10,6 +10,7 @@ export class SignupRedirectCallbackComponent implements OnInit {
   constructor(private _authService: AuthService) { }
 
   ngOnInit(): void {
+    console.log("sign up callback");
     this._authService.login();
   }
 
