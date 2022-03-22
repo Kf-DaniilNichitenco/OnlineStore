@@ -1,11 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { LoginGuardService } from './common/services/guards/login-guard.service';
 import { RouteConstants } from './constants/route.constants';
 
 const routes: Routes = [
   { path: `${RouteConstants.auth}`, loadChildren: () => import('./modules/pages/auth/auth.module').then(m => m.AuthModule) },
   { path: `${RouteConstants.accessDenied}`, loadChildren: () => import('./modules/pages/access-denied/access-denied.module').then(m => m.AccessDeniedModule) },
-  { path: `${RouteConstants.notFound}`, loadChildren: () => import('./modules/pages/not-found/not-found.module').then(m => m.NotFoundModule) }
+  { path: `${RouteConstants.notFound}`, loadChildren: () => import('./modules/pages/not-found/not-found.module').then(m => m.NotFoundModule) },
+  { path: `${RouteConstants.catalog}`, loadChildren: () => import('./modules/pages/catalog/catalog.module').then(m => m.CatalogModule) },
 ];
 
 @NgModule({

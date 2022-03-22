@@ -11,11 +11,17 @@ export class SigninRedirectCallbackComponent implements OnInit {
 
   constructor(private _authService: AuthService, private _router: Router) { }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     console.log("sign in callback");
-    this._authService.finishLogin()
-      .then(_ => this._router.navigate(['/'], {replaceUrl: true}))
-      .catch(_ => this._router.navigate([`/${RouteConstants.notFound}`]));
+
+    const user = await this._authService.finishLogin();
+
+    let route =  '/';
+    if (user === null) {
+      route = RouteConstants.notFound;
+    }
+
+    await this._router.navigate([route], {replaceUrl: true});
   }
 
 }

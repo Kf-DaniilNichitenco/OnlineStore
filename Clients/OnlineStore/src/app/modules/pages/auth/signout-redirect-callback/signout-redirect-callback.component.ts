@@ -13,9 +13,13 @@ export class SignoutRedirectCallbackComponent implements OnInit {
 
   ngOnInit(): void {
     console.log("sign out callback");
-    this._authService.finishLogin()
+    this._authService.finishLogout()
       .then(_ => this._router.navigate(['/'], {replaceUrl: true}))
-      .catch(_ => this._router.navigate([`/${RouteConstants.notFound}`]));
+      .catch(error => {
+      console.error(error);
+
+        this._router.navigate([`/${RouteConstants.notFound}`]);
+      });
   }
 
 }

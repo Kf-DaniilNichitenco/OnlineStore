@@ -37,6 +37,9 @@
               "src/styles.scss",
               "src/theme.scss"
             ],
+            "stylePreprocessorOptions": {
+
+            },
             "scripts": []
           },
           "configurations": {
