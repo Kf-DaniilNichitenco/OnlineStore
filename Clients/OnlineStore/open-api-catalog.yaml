@@ -1,0 +1,87 @@
+openapi: 3.0.1
+info:
+  title: Catalog service
+  version: v1
+paths:
+  /catalog/products/search:
+    get:
+      tags:
+        - products
+      operationId: SearchProducts
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/SearchProductQuery'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchProductQuery'
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchProductResultResponse'
+components:
+  schemas:
+    SearchProductItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        shortName:
+          type: string
+          nullable: true
+        shortDescription:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+          nullable: true
+      additionalProperties: false
+    SearchProductItemPageableResult:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        page:
+          type: integer
+          format: int32
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchProductItem'
+          nullable: true
+      additionalProperties: false
+    SearchProductQuery:
+      type: object
+      additionalProperties: false
+    SearchProductResultResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          nullable: true
+          readOnly: true
+        responseData:
+          $ref: '#/components/schemas/SearchProductItemPageableResult'
+      additionalProperties: false
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+      additionalProperties: false

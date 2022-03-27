@@ -1,14 +1,22 @@
 using FastEndpoints;
-using FastEndpoints.Swagger;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddFastEndpoints();
-builder.Services.AddSwaggerDoc(settings =>
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(options =>
 {
-    settings.Title = "Catalog service";
-    settings.Version = "v1";
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Catalog service",
+        Version = "v1"
+    });
+
+    options.SwaggerGeneratorOptions.TagsSelector = api => new List<string> { api.RelativePath!.Split('/')[1] };
+
 });
 
 var app = builder.Build();
@@ -19,12 +27,12 @@ app.UseFastEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseOpenApi();
-    app.UseSwaggerUi3(s => s.ConfigureDefaults());
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 //app.UseHttpsRedirection();
 
-app.UseAuthorization();
+//app.UseAuthorization();
 
 app.Run();

@@ -8,16 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FastEndpoints" Version="3.4.0" />
-    <PackageReference Include="FastEndpoints.Security" Version="3.4.0" />
-    <PackageReference Include="FastEndpoints.Swagger" Version="3.4.0" />
-    <PackageReference Include="FastEndpoints.Validation" Version="3.4.0" />
+    <PackageReference Include="FastEndpoints" Version="3.11.0" />
+    <PackageReference Include="FastEndpoints.Security" Version="3.11.0" />
+    <PackageReference Include="FastEndpoints.Validation" Version="3.11.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen.ConventionalRouting" Version="4.2.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Catalog.Domain\Catalog.Domain.csproj" />
     <ProjectReference Include="..\Order.Domain\Order.Domain.csproj" />
   </ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Exec Command="dotnet tool restore" />
+		<Exec Command="dotnet swagger tofile --yaml --output ../Clients/OnlineStore/open-api-catalog.yaml $(OutputPath)$(AssemblyName).dll v1"/>
+	</Target>
 
 </Project>
