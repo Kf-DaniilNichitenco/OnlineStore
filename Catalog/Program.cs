@@ -1,5 +1,5 @@
 using FastEndpoints;
-using FastEndpoints.Swagger;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
