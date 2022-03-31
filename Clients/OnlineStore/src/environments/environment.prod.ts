@@ -4,4 +4,5 @@ export const environment = {
   idpAuthority: $ENV.idpAuthority,
   clientId: $ENV.clientId,
   clientSecret: $ENV.clientSecret,
+  catalogServiceRoot: $ENV.catalogServiceRoot,
 };

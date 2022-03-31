@@ -5,4 +5,5 @@ interface Env {
   idpAuthority: string;
   clientId: string;
   clientSecret: string;
+  catalogServiceRoot: string;
 }

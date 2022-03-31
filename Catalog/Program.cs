@@ -6,10 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddFastEndpoints();
 builder.Services.AddSwaggerDoc(settings =>
-{
-    settings.Title = "Catalog service";
-    settings.Version = "v1";
-});
+    {
+        settings.Title = "Catalog service";
+        settings.Version = "v1";
+    },
+    tagIndex: 2,
+    shortSchemaNames: true);
 
 var app = builder.Build();
 
