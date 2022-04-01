@@ -19,12 +19,17 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
+	<!--ContractResolverType=$(AssemblyName):RequireObjectPropertiesContractResolver
+	<Exec WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=NSWAG" 
+	      Command="$(NSwagExe_Net60) run nswag.json /variables:Configuration=$(Configuration),ContractResolverType=$(AssemblyName):RequireObjectPropertiesContractResolver" />-->
+
+
+
+	<ItemGroup>
     <ProjectReference Include="..\Catalog.Domain\Catalog.Domain.csproj" />
   </ItemGroup>
 
 	<Target Name="NSwag" AfterTargets="Build">
-		<Exec EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development" 
-		      Command="$(NSwagExe_Net60) aspnetcore2openapi /assembly:$(TargetDir)Catalog.dll /output:../Clients/OnlineStore/open-api-catalog.json" />
+		<Exec EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development" Command="$(NSwagExe_Net60) aspnetcore2openapi /assembly:$(TargetDir)Catalog.dll /output:../Clients/OnlineStore/open-api-catalog.json /variables:Configuration=$(Configuration),ContractResolverType=$(AssemblyName):RequireObjectPropertiesContractResolver" />
 	</Target>
 </Project>
