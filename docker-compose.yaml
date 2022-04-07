@@ -31,6 +31,7 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "28085"
       ASPNETCORE_ENVIRONMENT: "Development"
+      ClientOrigins: ["http://localhost:4200"]
     #depends_on:
     #  - envoygateway
     volumes:

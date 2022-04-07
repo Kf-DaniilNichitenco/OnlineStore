@@ -8,6 +8,19 @@ using Newtonsoft.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddCors(options => options.AddDefaultPolicy(
+    corsPolicyBuilder =>
+    {
+        var clientOrigins = new List<string>();
+        builder.Configuration.GetSection("ClientOrigins").Bind(clientOrigins);
+
+        if (clientOrigins != null)
+        {
+            corsPolicyBuilder.WithOrigins(clientOrigins.ToArray());
+        }
+    })
+);
+
 builder.Services.AddFastEndpoints();
 builder.Services.AddSwaggerDoc(settings =>
     {
@@ -26,6 +39,8 @@ var app = builder.Build();
 
 
 // Configure the HTTP request pipeline.
+app.UseCors();
+
 app.UseFastEndpoints();
 
 if (app.Environment.IsDevelopment())
@@ -33,6 +48,13 @@ if (app.Environment.IsDevelopment())
     app.UseOpenApi();
     app.UseSwaggerUi3(s => s.ConfigureDefaults());
 }
+
+//app.UseCors(x => x
+//        .AllowAnyMethod()
+//        .AllowAnyHeader()
+//        .SetIsOriginAllowed(origin => true) // allow any origin
+//        .AllowCredentials()); // allow credentials
+
 
 //app.UseHttpsRedirection();
 
