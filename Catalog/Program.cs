@@ -11,13 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options => options.AddDefaultPolicy(
     corsPolicyBuilder =>
     {
-        var clientOrigins = new List<string>();
-        builder.Configuration.GetSection("ClientOrigins").Bind(clientOrigins);
+        var clientOrigins = builder.Configuration.GetValue<string>("ClientOrigins")
+                                                 .Split(',')
+                                                 .Select(x => x.Trim())
+                                                 .ToArray();
 
-        if (clientOrigins != null)
-        {
-            corsPolicyBuilder.WithOrigins(clientOrigins.ToArray());
-        }
+        corsPolicyBuilder.WithOrigins(clientOrigins);
     })
 );
 

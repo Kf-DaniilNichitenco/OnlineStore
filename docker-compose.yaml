@@ -1,5 +1,30 @@
 version: "3.8"
 services:
+  envoygateway:
+    build: Envoy/
+    container_name: 'envoygateway-composed'
+    ports:
+      - "9901:9901"
+      - "20000:20000"
+      - "20001:20001"
+    volumes:
+      - ./Envoy/envoy.yaml:/etc/envoy/envoy.yaml
+      - ./Envoy/https.crt:/etc/ssl/certs/https.crt
+      - ./Envoy/key.pem:/etc/ssl/certs/key.pem
+    networks:
+      - online-store
+
+  rabbitmq:
+    image: rabbitmq:3.8-management-alpine
+    container_name: 'rabbitmq-composed'
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/mnesia
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq/mnesia
+    networks:
+      - online-store
 
   billing:
     build:
@@ -12,8 +37,8 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "18085"
       ASPNETCORE_ENVIRONMENT: "Development"
-    #depends_on:
-    #  - envoygateway
+    depends_on:
+     - envoygateway
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
@@ -31,9 +56,9 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "28085"
       ASPNETCORE_ENVIRONMENT: "Development"
-      ClientOrigins: ["http://localhost:4200"]
-    #depends_on:
-    #  - envoygateway
+      ClientOrigins: http://localhost:4200
+    depends_on:
+     - envoygateway
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
@@ -51,8 +76,8 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "38085"
       ASPNETCORE_ENVIRONMENT: "Development"
-    #depends_on:
-    #  - envoygateway
+    depends_on:
+     - envoygateway
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
@@ -70,8 +95,8 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "48085"
       ASPNETCORE_ENVIRONMENT: "Development"
-    #depends_on:
-    #  - envoygateway
+    depends_on:
+     - envoygateway
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
@@ -89,8 +114,8 @@ services:
       ASPNETCORE_URLS: "https://+;http://+"
       ASPNETCORE_HTTPS_PORT: "58085"
       ASPNETCORE_ENVIRONMENT: "Development"
-    #depends_on:
-    #  - envoygateway
+    depends_on:
+     - envoygateway
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
@@ -110,9 +135,9 @@ services:
       ASPNETCORE_ENVIRONMENT: "Development"
       OnlineStoreClientHost: "localhost"
       OnlineStoreClientPort: "4200"
-      ConnectionStrings:IdentityServer: "Server=auth-sql-server;Database=OnlineStore.Auth;User Id=sa;Password=123Qwerty_;"
+      ConnectionStrings:IdentityServer: "Server=sql-server;Database=OnlineStore.Auth;User Id=sa;Password=123Qwerty_;"
     depends_on:
-      - auth-sql-server
+      - sql-server
     volumes:
       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
       - ${USERPROFILE}\.aspnet\https\:/root/.aspnet/https/
@@ -120,8 +145,8 @@ services:
     networks:
     - online-store
 
-  auth-sql-server:
-    container_name: auth-sql-server
+  sql-server:
+    container_name: sql-server-composed
     image: mcr.microsoft.com/mssql/server:2019-latest
     ports:
       - "1433:1433"

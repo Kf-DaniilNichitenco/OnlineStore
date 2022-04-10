@@ -4,11 +4,12 @@
 
 export const environment = {
   production: false,
-  clientRoot: "http://localhost:4200",
-  idpAuthority: "https://localhost:5001",
-  clientId: "6A491EB6-99A7-4277-9884-72904DF2BA9A",
-  clientSecret: "6FF4EC10-OnlineStore-4BFD-Client-8532-351C6D056462",
-  catalogServiceRoot: "https://localhost:7214"
+  clientRoot: 'http://localhost:4200',
+  idpAuthority: 'https://localhost:5001',
+  catalogRoot: 'https://localhost:7214',
+  catalog: 'https://localhost:7214',
+  clientId: '6A491EB6-99A7-4277-9884-72904DF2BA9A',
+  clientSecret: '6FF4EC10-OnlineStore-4BFD-Client-8532-351C6D056462',
 };
 
 /*
