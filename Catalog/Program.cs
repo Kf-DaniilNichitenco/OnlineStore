@@ -16,7 +16,8 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(
                                                  .Select(x => x.Trim())
                                                  .ToArray();
 
-        corsPolicyBuilder.WithOrigins(clientOrigins);
+        corsPolicyBuilder.WithOrigins(clientOrigins)
+                         .AllowAnyHeader();
     })
 );
 
