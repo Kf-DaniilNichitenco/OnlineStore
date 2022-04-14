@@ -3,7 +3,7 @@
     flex-grow: 2;
   }
 
-  span{
+  span {
     margin-right: 1rem;
   }
 
@@ -30,17 +30,4 @@
   ::ng-deep .mat-form-field-flex > .mat-form-field-infix {
     padding: 0 !important;
   }
-
-  // ::ng-deep .mat-form-field.mat-focused .mat-form-field-label {
-  //   color: red!important;
-  // }
-
-  // ::ng-deep mat-form-field.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
-  //   color: white!important;
-  // }
-
-  // ::ng-deep mat-form-field .mat-form-field-outline {
-  //   background-color: rgb(141, 141, 141)!important;
-  //   border-radius: 5px;
-  // }
 }
