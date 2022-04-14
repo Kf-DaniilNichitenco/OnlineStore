@@ -1,12 +1,18 @@
 import { Injectable } from '@angular/core';
-import { UserManager, User, UserManagerSettings } from 'oidc-client';
+import {
+  SignoutResponse,
+  User,
+  UserManager,
+  UserManagerSettings,
+} from 'oidc-client';
+import { from, Observable, of } from 'rxjs';
 import { Subject } from 'rxjs/internal/Subject';
-import { HttpClient } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
+import { catchError, map } from 'rxjs/operators';
 import { RouteConstants } from 'src/app/constants/route.constants';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private _userManager: UserManager;
@@ -19,74 +25,83 @@ export class AuthService {
     this._userManager = new UserManager(this.idpSettings);
   }
 
-  public login = async (): Promise<void> => {
-    return await this._userManager.signinRedirect();
+  public login(): Observable<void> {
+    return from(this._userManager.signinRedirect());
   }
 
-  public signup = () => {
+  public signup(): void {
     window.location.href = `${environment.idpAuthority}/account/signup?redirectUrl=${environment.clientRoot}/${RouteConstants.signupRedirectCallbackFullPath}`;
-    // return this.http.get(`${environment.idpAuthority}/account/signup?redirectUrl=${environment.clientRoot}/signin-callback`).toPromise()
-    //   .then(_ => this.login());
   }
 
-  public getAccessToken = async (): Promise<string | null> => {
-    const user = await this._userManager.getUser();
-    return !!user && !user.expired ? user.access_token : null;
+  public getAccessToken(): Observable<string | null> {
+    return from(this._userManager.getUser()).pipe(
+      map((user) => {
+        return user?.access_token ?? null;
+      })
+    );
   }
 
-  public getRefreshToken = async (): Promise<string | null> => {
-    const user = await this._userManager.getUser();
-    return !!user && !!user.refresh_token ? user.refresh_token : null;
+  public getRefreshToken(): Observable<string | null> {
+    return from(this._userManager.getUser()).pipe(
+      map((user) => {
+        return user?.refresh_token ?? null;
+      })
+    );
   }
 
-  public isAuthenticated = async (): Promise<boolean> => {
-    const user = await this._userManager.getUser();
-    if (this._user !== user) {
-      this._loginChangedSubject.next(user !== null && this.checkUser(user));
-    }
-
-    return this.checkUser(this._user);
+  public isAuthenticated(): Observable<boolean> {
+    return from(this._userManager.getUser()).pipe(
+      map((user) => {
+        if (this._user !== user) {
+          this._loginChangedSubject.next(user !== null && this.checkUser(user));
+        }
+        return this.checkUser(this._user);
+      }),
+      catchError(() => of(false))
+    );
   }
 
-  public finishLogin = async (): Promise<User | null> => {
-    try {
-      const user: User = await this._userManager.signinRedirectCallback();
+  public finishLogin(): Observable<User | null> {
+    return from(this._userManager.signinRedirectCallback()).pipe(
+      map((user) => {
+        this._user = user;
+        this._loginChangedSubject.next(this.checkUser(user));
 
-      this._user = user;
-      console.log(user);
-      this._loginChangedSubject.next(this.checkUser(user));
-
-      return user;
-    } catch (error: any) {
-      console.error(error);
-
-      return null;
-    }
+        return user;
+      }),
+      catchError(() => {
+        return of(null);
+      })
+    );
   }
 
-  public logout = () => {
+  public logout() {
     this._userManager.signoutRedirect();
   }
 
-  public finishLogout = async () => {
-    const res = await this._userManager.signoutRedirectCallback();
-    this._user = undefined;
-    return res;
+  public finishLogout(): Observable<SignoutResponse> {
+    return from(this._userManager.signoutRedirectCallback()).pipe(
+      map((res) => {
+        this._user = undefined;
+
+        return res;
+      })
+    );
   }
 
-  private checkUser = (user?: User): boolean => {
+  private checkUser(user?: User): boolean {
     return !!user && !user.expired;
   }
 
-  private get idpSettings() : UserManagerSettings {
+  private get idpSettings(): UserManagerSettings {
     return {
       authority: environment.idpAuthority,
       client_id: environment.clientId,
       client_secret: environment.clientSecret,
       redirect_uri: `${environment.clientRoot}/${RouteConstants.signinRedirectCallbackFullPath}`,
-      scope: "openid profile full offline_access",
-      response_type: "code",
-      post_logout_redirect_uri: `${environment.clientRoot}/${RouteConstants.signoutRedirectCallbackFullPath}`
-    }
+      scope: 'openid profile full offline_access',
+      response_type: 'code',
+      post_logout_redirect_uri: `${environment.clientRoot}/${RouteConstants.signoutRedirectCallbackFullPath}`,
+    };
   }
 }
