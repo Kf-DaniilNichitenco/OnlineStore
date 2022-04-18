@@ -136,6 +136,8 @@ services:
       OnlineStoreClientHost: "localhost"
       OnlineStoreClientPort: "4200"
       ConnectionStrings:IdentityServer: "Server=sql-server;Database=OnlineStore.Auth;User Id=sa;Password=123Qwerty_;"
+      IdentityServerAuthority: "http://auth:80/"
+      IdentityIssuer: "http://auth:80/"
     depends_on:
       - sql-server
     volumes:

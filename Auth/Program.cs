@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 
+using Microsoft.AspNetCore.Hosting;
+
 var builder = WebApplication.CreateBuilder();
 
 RegisterServices(builder.Services, builder.Configuration);
@@ -80,6 +82,7 @@ void RegisterServices(IServiceCollection services, IConfiguration configuration)
         options.Events.RaiseInformationEvents = true;
         options.Events.RaiseFailureEvents = true;
         options.Events.RaiseSuccessEvents = true;
+        options.IssuerUri = configuration["IdentityIssuer"];
 
         // see https://identityserver4.readthedocs.io/en/latest/topics/resources.html
         options.EmitStaticAudienceClaim = true;
@@ -103,7 +106,15 @@ void RegisterServices(IServiceCollection services, IConfiguration configuration)
     .AddAspNetIdentity<User>()
     .AddDeveloperSigningCredential();
 
+    // IdentityServerConstants.DefaultCookieAuthenticationScheme is set by IdentityServer4 as default scheme
     services.AddAuthentication()
+        .AddIdentityServerAuthentication(options =>
+        {
+            options.Authority = configuration["IdentityServerAuthority"];
+            options.RequireHttpsMetadata = false;
+            options.ApiName = "AuthService";
+            options.ApiSecret = "A1837CD3-Auth-5340-API-4B40-Service-BE7C-55E5B5C9FAAB";
+        })
         .AddGoogle(options =>
         {
             options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;

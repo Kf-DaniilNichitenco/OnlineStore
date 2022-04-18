@@ -213,7 +213,7 @@ public class SeedData
         await configurationDbContext.ApiResources.AddAsync(
             new ApiResource
             {
-                Name = "Auth",
+                Name = "AuthService",
                 DisplayName = "Auth service",
                 Secrets = new List<ApiResourceSecret>
                 {
