@@ -1,92 +1,61 @@
-@model Auth.Quickstart.Account.LoginViewModel
+@model Auth.Quickstart.Account.LoginSignupViewModel
 
-<div class="login-page">
-    <div class="lead">
-        <h1>Login</h1>
-        <p>Choose how to login</p>
-    </div>
 
-    <partial name="_ValidationSummary" />
+<div class="login-wrap">
+	<div class="login-html">
+		<input id="tab-1" type="radio" name="tab" class="sign-in" @(Model.NewUser?"checked='checked'":"")><label fore="tab-1" class="tab">Sign In</label>
+		<input id="tab-2" type="radio" name="tab" class="sign-up" @(!Model.NewUser?"checked='checked'":"")><label for="tab-2" class="tab">Sign Up</label>
+		<div class="login-form">
+			<form class="sign-in-htm" asp-action="Login" method="post">
+				<input type="hidden" asp-for="LoginViewModel.ReturnUrl" />
 
-    <div class="row">
-
-        @if (Model.EnableLocalLogin)
-        {
-            <div class="col-sm-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Local Account</h2>
-                    </div>
-
-                    <div class="card-body">
-                        <form asp-route="Login">
-                            <input type="hidden" asp-for="ReturnUrl" />
-
-                            <div class="form-group">
-                                <label asp-for="Username"></label>
-                                <input class="form-control" placeholder="Username" asp-for="Username" autofocus>
-                            </div>
-                            <div class="form-group">
-                                <label asp-for="Password"></label>
-                                <input type="password" class="form-control" placeholder="Password" asp-for="Password" autocomplete="off">
-                            </div>
-                            @if (Model.AllowRememberLogin)
-                            {
-                                <div class="form-group">
-                                    <div class="form-check">
-                                        <input class="form-check-input" asp-for="RememberLogin">
-                                        <label class="form-check-label" asp-for="RememberLogin">
-                                            Remember My Login
-                                        </label>
-                                    </div>
-                                </div>
-                            }
-
-                            <div>
-                                <p>The default users are alice/bob, password: Pass123$</p>
-                            </div>
-
-                            <button class="btn btn-primary" name="button" value="login">Login</button>
-                            <button class="btn btn-secondary" name="button" value="cancel">Cancel</button>
-                        </form>
-                    </div>
+                <div class="group">
+                    <label asp-for="LoginViewModel.Login" class="label">Username/Email</label>
+                    <input asp-for="LoginViewModel.Login" type="text" class="input">
                 </div>
-            </div>
-        }
-
-        @if (Model.VisibleExternalProviders.Any())
-        {
-            <div class="col-sm-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>External Account</h2>
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-inline">
-                            @foreach (var provider in Model.VisibleExternalProviders)
-                            {
-                                <li class="list-inline-item">
-                                    <a class="btn btn-secondary"
-                                       asp-controller="External"
-                                       asp-action="Challenge"
-                                       asp-route-scheme="@provider.AuthenticationScheme"
-                                       asp-route-returnUrl="@Model.ReturnUrl">
-                                        @provider.DisplayName
-                                    </a>
-                                </li>
-                            }
-                        </ul>
-                    </div>
+                <div class="group">
+                    <label asp-for="LoginViewModel.Password" class="label">Password</label>
+                    <input asp-for="LoginViewModel.Password" type="password" autocomplete="off" class="input" data-type="password">
                 </div>
-            </div>
-        }
-
-        @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
-        {
-            <div class="alert alert-warning">
-                <strong>Invalid login request</strong>
-                There are no login schemes configured for this request.
-            </div>
-        }
-    </div>
+                <div class="group">
+                    <input asp-for="LoginViewModel.RememberLogin" class="check" checked>
+                    <label asp-for="LoginViewModel.RememberLogin"><span class="icon"></span> Keep me Signed in</label>
+                </div>
+                <div class="group">
+                    <button class="button" name="button" value="login">Login</button>
+                </div>
+                <div class="hr"></div>
+                <div class="foot-lnk">
+                    <a href="#forgot">Forgot Password?</a>
+                </div>
+			</form>
+            <form class="sign-up-htm" asp-action="Signup" method="post">
+                <input type="hidden" asp-for="SignupViewModel.ReturnUrl" />
+                
+                <div class="group">
+                    <label asp-for="SignupViewModel.Username" class="label">Username/Email</label>
+                    <input asp-for="SignupViewModel.Username" type="text" class="input">
+                </div>
+                <div class="group">
+                    <label asp-for="SignupViewModel.Email" class="label">Email</label>
+                    <input asp-for="SignupViewModel.Email" type="text" class="input">
+                </div>
+                <div class="group">
+                    <label asp-for="SignupViewModel.Password" class="label">Password</label>
+                    <input asp-for="SignupViewModel.Password" type="password" autocomplete="off" class="input" data-type="password">
+                </div>
+                <div class="group">
+                    <label asp-for="SignupViewModel.RepeatPassword" class="label">Repeat Password</label>
+                    <input asp-for="SignupViewModel.RepeatPassword" type="password" autocomplete="off" class="input" data-type="password">
+                </div>
+                <div class="group">
+                    <button class="button" name="button" value="signup">Sign up</button>
+                </div>
+                <div class="hr"></div>
+                <div class="foot-lnk">
+                    <label for="tab-1">Already Member?</label>
+                </div>
+            </form>
+		</div>
+	</div>
 </div>
