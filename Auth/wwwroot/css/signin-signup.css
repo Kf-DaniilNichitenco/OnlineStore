@@ -187,3 +187,10 @@ color: #fff;
 .foot-lnk {
     text-align: center;
 }
+
+.google-btn-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Auth.Constants;
 using Auth.Models;
 using IdentityModel;
 using IdentityServer4;
@@ -101,7 +102,15 @@ namespace Auth.Quickstart.Account
                 // this might be where you might initiate a custom workflow for user registration
                 // in this sample we don't show how that would be done, as our sample implementation
                 // simply auto-provisions new external user
-                user = await AutoProvisionUserAsync(provider, providerUserId, claims);
+                user = AutoProvisionUser(provider, claims);
+
+                if (provider != "Google")
+                {
+                    throw new Exception("Unsupported external provider");
+                }
+
+                await _userManager.CreateAsync(user);
+                await _userManager.AddToRoleAsync(user, Roles.Buyer);
             }
 
             // this allows us to collect any additional claims or properties
@@ -112,20 +121,14 @@ namespace Auth.Quickstart.Account
             ProcessLoginCallback(result, additionalLocalClaims, localSignInProps);
 
             // issue authentication cookie for user
-            // we must issue the cookie maually, and can't use the SignInManager because
-            // it doesn't expose an API to issue additional claims from the login workflow
-            var principal = await _signInManager.CreateUserPrincipalAsync(user);
-            additionalLocalClaims.AddRange(principal.Claims);
-            var name = principal.FindFirst(JwtClaimTypes.Name)?.Value ?? user.Id.ToString();
-
-            var isuser = new IdentityServerUser(user.Id.ToString())
+            var issuer = new IdentityServerUser(user.Id.ToString())
             {
-                DisplayName = name,
+                DisplayName = user.UserName,
                 IdentityProvider = provider,
-                AdditionalClaims = additionalLocalClaims
+                AdditionalClaims = additionalLocalClaims,
             };
 
-            await HttpContext.SignInAsync(isuser, localSignInProps);
+            await HttpContext.SignInAsync(issuer, localSignInProps);
 
             // delete temporary cookie used during external authentication
             await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
@@ -135,7 +138,7 @@ namespace Auth.Quickstart.Account
 
             // check if external login is in the context of an OIDC request
             var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
-            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.Id.ToString(), name, true, context?.Client.ClientId));
+            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.Id.ToString(), user.UserName, true, context?.Client.ClientId));
 
             if (context != null)
             {
@@ -158,79 +161,33 @@ namespace Auth.Quickstart.Account
             // try to determine the unique id of the external user (issued by the provider)
             // the most common claim type for that are the sub claim and the NameIdentifier
             // depending on the external provider, some other claim type might be used
-            var userIdClaim = externalUser.FindFirst(JwtClaimTypes.Subject) ??
-                              externalUser.FindFirst(ClaimTypes.NameIdentifier) ??
-                              throw new Exception("Unknown userid");
+            var userEmail = externalUser.FindFirst(ClaimTypes.Email) ??
+                            throw new Exception("Unknown email");
+
+            var providerUserId = externalUser.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                                 throw new Exception("Unknown user id");
 
             // remove the user id claim so we don't include it as an extra claim if/when we provision the user
             var claims = externalUser.Claims.ToList();
-            claims.Remove(userIdClaim);
 
             var provider = result.Properties.Items["scheme"];
-            var providerUserId = userIdClaim.Value;
 
             // find external user
-            var user = await _userManager.FindByLoginAsync(provider, providerUserId);
+            var user = await _userManager.FindByEmailAsync(userEmail.Value);
 
             return (user, provider, providerUserId, claims);
         }
 
-        private async Task<User> AutoProvisionUserAsync(string provider, string providerUserId, IEnumerable<Claim> claims)
+        private User AutoProvisionUser(string provider, IEnumerable<Claim> claims)
         {
-            // create a list of claims that we want to transfer into our store
-            var filtered = new List<Claim>();
-
-            // user's display name
-            var name = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Name)?.Value ??
-                claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
-            if (name != null)
-            {
-                filtered.Add(new Claim(JwtClaimTypes.Name, name));
-            }
-            else
-            {
-                var first = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.GivenName)?.Value ??
-                    claims.FirstOrDefault(x => x.Type == ClaimTypes.GivenName)?.Value;
-                var last = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.FamilyName)?.Value ??
-                    claims.FirstOrDefault(x => x.Type == ClaimTypes.Surname)?.Value;
-                if (first != null && last != null)
-                {
-                    filtered.Add(new Claim(JwtClaimTypes.Name, first + " " + last));
-                }
-                else if (first != null)
-                {
-                    filtered.Add(new Claim(JwtClaimTypes.Name, first));
-                }
-                else if (last != null)
-                {
-                    filtered.Add(new Claim(JwtClaimTypes.Name, last));
-                }
-            }
-
-            // email
-            var email = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Email)?.Value ??
-               claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
-            if (email != null)
-            {
-                filtered.Add(new Claim(JwtClaimTypes.Email, email));
-            }
-
             var user = new User
             {
-                UserName = Guid.NewGuid().ToString(),
+                UserName = claims.First(x => x.Type == ClaimTypes.Email).Value.Split("@", 2).First(),
+                Email = claims.First(x => x.Type == ClaimTypes.Email).Value,
+                EmailConfirmed = true,
+                IdentityProvider = provider,
+                IsActive = true,
             };
-            var identityResult = await _userManager.CreateAsync(user);
-            if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
-
-            if (filtered.Any())
-            {
-                identityResult = await _userManager.AddClaimsAsync(user, filtered);
-                if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
-            }
-
-            identityResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerUserId, provider));
-            if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
-
             return user;
         }
 
