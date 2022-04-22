@@ -10,6 +10,10 @@
 
         public string? ShortDescription { get; set; }
 
-        public IEnumerable<Tag>? Tags { get; set; }
+        public IEnumerable<Tag> Tags { get; set; } = Enumerable.Empty<Tag>();
+
+        public Category? Category { get; set; }
+
+        public Guid CategoryId { get; set; }
     }
 }

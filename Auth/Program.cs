@@ -16,8 +16,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 
-using Microsoft.AspNetCore.Hosting;
-
 var builder = WebApplication.CreateBuilder();
 
 RegisterServices(builder.Services, builder.Configuration);

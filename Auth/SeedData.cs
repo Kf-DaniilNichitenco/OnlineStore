@@ -374,6 +374,8 @@ public class SeedData
 
         var buyerUser = new User
         {
+            // Id's used for mocking data
+            Id = new Guid("92EF910B-137F-44FF-AC83-D92AD8BB5421"),
             UserName = "buyer123",
             Email = "buyer@gmail.com",
             EmailConfirmed = true,

@@ -2,8 +2,6 @@
 using Catalog.Views;
 using Catalog.Views.Queries;
 using FastEndpoints;
-using FastEndpoints.Validation;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.Features.Products.SearchProducts
 {

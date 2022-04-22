@@ -10,19 +10,14 @@ namespace Catalog.Features.Products.SearchProducts
         {
             var productsList = products.ToList();
 
-            var data = new List<SearchProductItem>();
-
-            foreach (var product in productsList)
+            var data = productsList.Select(product => new SearchProductItem
             {
-                var item = new SearchProductItem
-                {
-                    Id = product.Id,
-                    ShortName = product.ShortName ?? product.Name,
-                    ShortDescription = product.ShortDescription ?? product.Description,
-                };
-
-                data.Add(item);
-            }
+                Id = product.Id, 
+                ShortName = product.ShortName ?? product.Name, 
+                ShortDescription = product.ShortDescription ?? product.Description, 
+                Tags = product.Tags
+            })
+                .ToList();
 
             var result = new SearchProductResultResponse
             {
@@ -32,7 +27,7 @@ namespace Catalog.Features.Products.SearchProducts
                     Total = productsList.Count,
                     Size = data.Count,
                     Page = 1
-                }
+                },
             };
 
             return result;
