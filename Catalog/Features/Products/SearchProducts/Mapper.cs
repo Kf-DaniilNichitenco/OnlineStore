@@ -15,7 +15,11 @@ namespace Catalog.Features.Products.SearchProducts
                 Id = product.Id, 
                 ShortName = product.ShortName ?? product.Name, 
                 ShortDescription = product.ShortDescription ?? product.Description, 
-                Tags = product.Tags
+                Tags = product.Tags.Select(x => new TagViewModel
+                {
+                    Id = x.Id,
+                    Name = x.Name
+                })
             })
                 .ToList();
 

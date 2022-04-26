@@ -1,7 +1,9 @@
 ﻿
+using FastEndpoints;
+using Order.Domain.Enums;
+
 namespace Order.Features.Orders.GetOrder;
 
-using FastEndpoints.Validation;
 using Domain.Entities;
 
 public class GetOrderDetailsRequest
@@ -19,6 +21,21 @@ public class Validator : Validator<GetOrderDetailsRequest>
 
 public class GetOrderDetailsResponse
 {
-    public Order ResponseData { get; set; }
+    public OrderDetail ResponseData { get; set; }
     public string Message => "";
+}
+
+public class OrderDetail
+{
+    public IEnumerable<ProductViewModel> Products { get; set; } = Enumerable.Empty<ProductViewModel>();
+
+    public Guid ShippingDetailsId { get; set; }
+
+    public string Address { get; set; } = string.Empty;
+
+    public decimal Cost { get; set; }
+
+    public OrderStatus Status { get; set; }
+
+    public bool IsClosed { get; set; }
 }

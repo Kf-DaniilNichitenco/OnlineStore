@@ -17,7 +17,13 @@ public class Mapper : Mapper<SearchOrderQuery, SearchOrderResultResponse, IEnume
                 Cost = order.Cost,
                 Address = order.Address,
                 Status = order.Status,
-                Products = order.Products,
+                Products = order.Products.Select(x => new ProductViewModel
+                {
+                    Id = x.ExternalId,
+                    Tags = x.Tags,
+                    Amount = x.Amount,
+                    Name = x.Name
+                })
             })
             .ToList();
 

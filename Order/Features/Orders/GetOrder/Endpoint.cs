@@ -1,16 +1,19 @@
-﻿using FastEndpoints;
+﻿using Catalog.Features;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace Order.Features.Orders.GetOrder;
 
-public class Endpoint : Endpoint<GetOrderDetailsRequest, GetOrderDetailsResponse, Mapper>
+public class Endpoint : BaseEndpoint<GetOrderDetailsRequest, GetOrderDetailsResponse, Mapper>
 {
     public IAuthorizationService AuthorizationService { get; set; }
 
     public override void Configure()
     {
-        Post("/order/order/{id}");
+        Get("/order/order-details/{id}");
+
+        RequireAnyRoles(Constants.Roles.Buyer, Constants.Roles.Vendor , Constants.Roles.Admin);
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(GetOrderDetailsRequest request, CancellationToken cancellationToken)
@@ -24,10 +27,7 @@ public class Endpoint : Endpoint<GetOrderDetailsRequest, GetOrderDetailsResponse
             ThrowError("Forbidden");
         }
 
-        var result = new GetOrderDetailsResponse
-        {
-            ResponseData = order
-        };
+        var result = Map.FromEntity(order);
 
         await SendAsync(result, cancellation: cancellationToken);
     }

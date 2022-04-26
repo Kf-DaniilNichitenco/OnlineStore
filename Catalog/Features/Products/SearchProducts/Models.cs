@@ -33,6 +33,12 @@ namespace Catalog.Features.Products.SearchProducts
 
         public string ShortDescription { get; set; } = string.Empty;
 
-        public IEnumerable<Tag> Tags { get; set; } = Enumerable.Empty<Tag>();
+        public IEnumerable<TagViewModel> Tags { get; set; } = Enumerable.Empty<TagViewModel>();
+    }
+
+    public class TagViewModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = "Tag";
     }
 }

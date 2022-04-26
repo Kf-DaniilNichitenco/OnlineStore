@@ -312,6 +312,7 @@ public class SeedData
 
         var adminUser = new User
         {
+            IsActive = true,
             UserName = "admin123",
             Email = "admin@gmail.com",
             EmailConfirmed = true,
@@ -343,6 +344,7 @@ public class SeedData
 
         var vendorUser = new User
         {
+            IsActive = true,
             UserName = "vendor123",
             Email = "vendor@gmail.com",
             EmailConfirmed = true,
@@ -374,6 +376,7 @@ public class SeedData
 
         var buyerUser = new User
         {
+            IsActive = true,
             // Id's used for mocking data
             Id = new Guid("92EF910B-137F-44FF-AC83-D92AD8BB5421"),
             UserName = "buyer123",

@@ -1,4 +1,4 @@
-﻿using FastEndpoints.Validation;
+﻿using FastEndpoints;
 
 namespace Warehouse.Features.TestingFeature;
 

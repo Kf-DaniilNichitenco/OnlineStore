@@ -1,7 +1,9 @@
-﻿namespace Order.Features.Orders.SearchOrder;
+﻿using FastEndpoints;
+using FluentValidation;
+
+namespace Order.Features.Orders.SearchOrder;
 
 using Domain.Entities;
-using FastEndpoints.Validation;
 using Domain.Enums;
 using Views;
 using Views.Queries;
@@ -31,6 +33,6 @@ public class SearchOrderItem
     public string Address { get; set; } = string.Empty;
     public decimal Cost {get;set;}
     public OrderStatus Status {get;set;}
-    public IEnumerable<Product> Products { get; set; } = Enumerable.Empty<Product>();
+    public IEnumerable<ProductViewModel> Products { get; set; } = Enumerable.Empty<ProductViewModel>();
 
 }

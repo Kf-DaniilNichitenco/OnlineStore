@@ -1,8 +1,6 @@
-﻿using FastEndpoints;
-
-namespace Catalog.Features.Products.SearchProducts
+﻿namespace Catalog.Features.Products.SearchProducts
 {
-    public class Endpoint : Endpoint<SearchProductQuery, SearchProductResultResponse, Mapper>
+    public class Endpoint : BaseEndpoint<SearchProductQuery, SearchProductResultResponse, Mapper>
     {
         public override void Configure()
         {
@@ -11,7 +9,7 @@ namespace Catalog.Features.Products.SearchProducts
             {
                 x.WithName("SearchProducts");
             });
-            
+
             AllowAnonymous();
         }
 

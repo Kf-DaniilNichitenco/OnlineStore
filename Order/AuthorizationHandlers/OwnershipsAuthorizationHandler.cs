@@ -22,7 +22,7 @@ namespace Order.AuthorizationHandlers
                 context.Succeed(requirement);
             }
 
-            var userRole = context.User.Claims.FirstOrDefault(c => c.Type == "Role" && c.Value == Roles.Admin);
+            var userRole = context.User.Claims.FirstOrDefault(c => c.Type == "role" && c.Value == Roles.Admin);
 
             if (userRole != null)
             {

@@ -1,16 +1,16 @@
-﻿using FastEndpoints;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
+﻿using Catalog.Features;
 
 namespace Order.Features.Orders.SearchOrder;
 
-public class Endpoint : Endpoint<SearchOrderQuery, SearchOrderResultResponse, Mapper>
+public class Endpoint : BaseEndpoint<SearchOrderQuery, SearchOrderResultResponse, Mapper>
 {
-    public IAuthorizationService AuthorizationService { get; set; }
+    //public IAuthorizationService AuthorizationService { get; set; }
 
     public override void Configure()
     {
-        Post("/route/path/here");
+        Get("/order/search");
+
+        RequireAnyRoles(Constants.Roles.Admin);
         AllowAnonymous();
     }
 
@@ -23,12 +23,12 @@ public class Endpoint : Endpoint<SearchOrderQuery, SearchOrderResultResponse, Ma
                                 .Take(searchOrderQuery.Size)
                                 .ToList();
 
-        var authResult = await AuthorizationService.AuthorizeAsync(User, orders, new OperationAuthorizationRequirement());
+        //var authResult = await AuthorizationService.AuthorizeAsync(User, orders, new OperationAuthorizationRequirement());
 
-        if (!authResult.Succeeded)
-        {
-            ThrowError("Forbidden");
-        }
+        //if (!authResult.Succeeded)
+        //{
+        //    ThrowError("Forbidden");
+        //}
 
         var result = Map.FromEntity(orders);
 

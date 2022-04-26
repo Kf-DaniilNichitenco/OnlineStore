@@ -49,8 +49,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUi3(s => s.ConfigureDefaults());
 }
 
-app.UseAuthorization();
-
 app.Run();
 
 internal class RequireObjectPropertiesContractResolver : CamelCasePropertyNamesContractResolver

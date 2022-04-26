@@ -67,7 +67,15 @@ void RegisterServices(IServiceCollection services, IConfiguration configuration)
     services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(connectionString));
 
-    services.AddIdentity<User, Role>()
+    services.AddIdentity<User, Role>(options =>
+        {
+            options.Password.RequiredLength = 6;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.User.RequireUniqueEmail = true;
+            options.SignIn.RequireConfirmedEmail = false;
+        })
         .AddRoles<Role>()
         .AddUserManager<UserManager>()
         .AddRoleManager<RoleManager>()
@@ -102,6 +110,7 @@ void RegisterServices(IServiceCollection services, IConfiguration configuration)
         options.DefaultSchema = "is4";
     })
     .AddAspNetIdentity<User>()
+    .AddProfileService<ProfileService>()
     .AddDeveloperSigningCredential();
 
     // IdentityServerConstants.DefaultCookieAuthenticationScheme is set by IdentityServer4 as default scheme
