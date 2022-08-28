@@ -67,7 +67,15 @@ void RegisterServices(IServiceCollection services, IConfiguration configuration)
     services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(connectionString));
 
-    services.AddIdentity<User, Role>()
+    services.AddIdentity<User, Role>(options =>
+        {
+            options.Password.RequiredLength = 6;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.User.RequireUniqueEmail = true;
+            options.SignIn.RequireConfirmedEmail = false;
+        })
         .AddRoles<Role>()
         .AddUserManager<UserManager>()
         .AddRoleManager<RoleManager>()
@@ -80,6 +88,7 @@ void RegisterServices(IServiceCollection services, IConfiguration configuration)
         options.Events.RaiseInformationEvents = true;
         options.Events.RaiseFailureEvents = true;
         options.Events.RaiseSuccessEvents = true;
+        options.IssuerUri = configuration["IdentityIssuer"];
 
         // see https://identityserver4.readthedocs.io/en/latest/topics/resources.html
         options.EmitStaticAudienceClaim = true;
@@ -101,9 +110,18 @@ void RegisterServices(IServiceCollection services, IConfiguration configuration)
         options.DefaultSchema = "is4";
     })
     .AddAspNetIdentity<User>()
+    .AddProfileService<ProfileService>()
     .AddDeveloperSigningCredential();
 
+    // IdentityServerConstants.DefaultCookieAuthenticationScheme is set by IdentityServer4 as default scheme
     services.AddAuthentication()
+        .AddIdentityServerAuthentication(options =>
+        {
+            options.Authority = configuration["IdentityServerAuthority"];
+            options.RequireHttpsMetadata = false;
+            options.ApiName = "AuthService";
+            options.ApiSecret = "A1837CD3-Auth-5340-API-4B40-Service-BE7C-55E5B5C9FAAB";
+        })
         .AddGoogle(options =>
         {
             options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
@@ -111,8 +129,8 @@ void RegisterServices(IServiceCollection services, IConfiguration configuration)
             // register your IdentityServer with Google at https://console.developers.google.com
             // enable the Google+ API
             // set the redirect URI to https://localhost:5001/signin-google
-            options.ClientId = "copy client ID from Google here";
-            options.ClientSecret = "copy client secret from Google here";
+            options.ClientId = "1044294336806-d9kjtlqk5qj4i7ebnfkq4qdpag3q96i8.apps.googleusercontent.com";
+            options.ClientSecret = "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";
         });
 }
 
@@ -133,7 +151,14 @@ void ConfigurePipeline()
         app.UseDeveloperExceptionPage();
     }
 
-    app.UseStaticFiles();
+    app.UseStaticFiles(new StaticFileOptions()
+    {
+        OnPrepareResponse = context =>
+        {
+            context.Context.Response.Headers.Add("Cache-Control", "no-cache, no-store");
+            context.Context.Response.Headers.Add("Expires", "-1");
+        }
+    });
 
     app.UseRouting();
     app.UseIdentityServer();

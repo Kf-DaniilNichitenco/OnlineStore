@@ -1,0 +1,29 @@
+<mat-form-field appearance="outline">
+  <input
+    type="text"
+    matInput
+    [formControl]="inputControl"
+    [(ngModel)]="inputValue"
+    [matAutocomplete]="auto"
+    (focus)="onFocus()"
+    (focusout)="onFocusOut()"
+    [matAutocompleteDisabled]="true"
+    placeholder="Search"
+  />
+  <mat-autocomplete #auto="matAutocomplete">
+    <mat-option
+      (click)="select.emit(option)"
+      *ngFor="let option of dataSource"
+      [value]="option.id"
+      >{{ option.shortName }}</mat-option
+    >
+  </mat-autocomplete>
+  <button
+    (click)="search.emit(inputValue)"
+    matSuffix
+    mat-icon-button
+    color="primary"
+  >
+    <mat-icon>search</mat-icon>
+  </button>
+</mat-form-field>

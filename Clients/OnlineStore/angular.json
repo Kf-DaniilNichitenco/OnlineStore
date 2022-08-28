@@ -18,8 +18,11 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
+            "customWebpackConfig": {
+              "path":"custom-webpack.config.js"
+            },
             "outputPath": "dist/OnlineStore",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -31,8 +34,12 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/theme.scss"
             ],
+            "stylePreprocessorOptions": {
+
+            },
             "scripts": []
           },
           "configurations": {
@@ -99,7 +106,8 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/theme.scss"
             ],
             "scripts": []
           }

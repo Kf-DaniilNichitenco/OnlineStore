@@ -1,0 +1,43 @@
+﻿namespace Order.Features.Orders.SearchOrder;
+
+using Views;
+using FastEndpoints;
+using Domain.Entities;
+
+public class Mapper : Mapper<SearchOrderQuery, SearchOrderResultResponse, IEnumerable<Order>>
+{
+    public override SearchOrderResultResponse FromEntity(IEnumerable<Order> orders)
+    {
+        var ordersList = orders.ToList();
+
+        var data = ordersList.Select(order => new SearchOrderItem
+            {
+                Id = order.Id,
+                OwnerId = order.OwnerId,
+                Cost = order.Cost,
+                Address = order.Address,
+                Status = order.Status,
+                Products = order.Products.Select(x => new ProductViewModel
+                {
+                    Id = x.ExternalId,
+                    Tags = x.Tags,
+                    Amount = x.Amount,
+                    Name = x.Name
+                })
+            })
+            .ToList();
+
+        var result = new SearchOrderResultResponse
+        {
+            ResponseData = new PageableResult<SearchOrderItem>
+            {
+                Data = data,
+                Total = ordersList.Count,
+                Size = data.Count,
+                Page = 1
+            },
+        };
+
+        return result;
+    }
+}

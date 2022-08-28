@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Auth.Constants;
 using Auth.Models;
 using IdentityModel;
 using IdentityServer4.Events;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace Auth.Quickstart.Account
 {
@@ -49,17 +51,28 @@ namespace Auth.Quickstart.Account
         /// <summary>
         /// Entry point into the login workflow
         /// </summary>
+        [Route("Account/Login")]
+        [Route("Account/Signup")]
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl)
         {
             // build a model so we know what to show on the login page
-            var vm = await BuildLoginViewModelAsync(returnUrl);
+            var loginVm = await BuildLoginViewModelAsync(returnUrl);
 
-            if (vm.IsExternalLoginOnly)
+            if (loginVm.IsExternalLoginOnly)
             {
                 // we only have one option for logging in and it's an external provider
-                return RedirectToAction("Challenge", "External", new { scheme = vm.ExternalLoginScheme, returnUrl });
+                return RedirectToAction("Challenge", "External", new { scheme = loginVm.ExternalLoginScheme, returnUrl });
             }
+
+            var signinVm = BuildSignupViewModel(returnUrl);
+
+            var vm = new LoginSignupViewModel()
+            {
+                LoginViewModel = loginVm,
+                SignupViewModel = signinVm,
+                NewUser = Request.Path.Value?.ToLower().Contains("login") == true
+            };
 
             return View(vm);
         }
@@ -69,8 +82,9 @@ namespace Auth.Quickstart.Account
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginInputModel model, string button)
+        public async Task<IActionResult> Login(LoginSignupViewModel loginSignupViewModel, string button)
         {
+            var model = loginSignupViewModel.LoginViewModel;
             // check if we are in the context of an authorization request
             var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
 
@@ -103,10 +117,22 @@ namespace Auth.Quickstart.Account
 
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
+                var user = await _userManager.FindByEmailAsync(model.Login);
+                SignInResult result;
+
+                if (user != null)
+                {
+                    result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberLogin, lockoutOnFailure: true);
+                }
+                else
+                {
+                    user = await _userManager.FindByNameAsync(model.Login);
+                    result = await _signInManager.PasswordSignInAsync(model.Login, model.Password, model.RememberLogin, lockoutOnFailure: true);
+                }
+
                 if (result.Succeeded)
                 {
-                    var user = await _userManager.FindByNameAsync(model.Username);
+                    //var user = await _userManager.FindByNameAsync(model.Username);
                     await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id.ToString(), user.UserName, clientId: context?.Client.ClientId));
 
                     if (context != null)
@@ -138,15 +164,95 @@ namespace Auth.Quickstart.Account
                     }
                 }
 
-                await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials", clientId: context?.Client.ClientId));
+                await _events.RaiseAsync(new UserLoginFailureEvent(model.Login, "invalid credentials", clientId: context?.Client.ClientId));
                 ModelState.AddModelError(string.Empty, AccountOptions.InvalidCredentialsErrorMessage);
             }
 
             // something went wrong, show form with error
-            var vm = await BuildLoginViewModelAsync(model);
+            var vm = new LoginSignupViewModel
+            {
+                LoginViewModel = await BuildLoginViewModelAsync(model),
+                NewUser = false
+            };
+
             return View(vm);
         }
 
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Signup(LoginSignupViewModel loginSignupViewModel, string button)
+        {
+            var model = loginSignupViewModel.SignupViewModel;
+
+            if (button != "signup")
+            {
+                // check if we are in the context of an authorization request
+                var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
+
+                if (context != null)
+                {
+                    // if the user cancels, send a result back into IdentityServer as if they 
+                    // denied the consent (even if this client does not require consent).
+                    // this will send back an access denied OIDC error response to the client.
+                    await _interaction.DenyAuthorizationAsync(context, AuthorizationError.AccessDenied);
+
+                    // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
+                    if (context.IsNativeClient())
+                    {
+                        // The client is native, so this change in how to
+                        // return the response is for better UX for the end user.
+                        return this.LoadingPage("Redirect", model.ReturnUrl);
+                    }
+
+                    if (!string.IsNullOrEmpty(model.ReturnUrl))
+                    {
+                        return Redirect(model.ReturnUrl);
+                    }
+                }
+
+                // since we don't have a valid context, then we just go back to the home page
+                return Redirect("~/");
+            }
+
+            ViewData["ReturnUrl"] = model.ReturnUrl;
+            if (ModelState.IsValid)
+            {
+                var user = new User
+                {
+                    UserName = model.Username,
+                    Email = model.Email,
+                    IsActive = true
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(user, Roles.Buyer);
+                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
+                    // Send an email with this link
+                    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+                    //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
+                    //    $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>");
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    return Redirect(!string.IsNullOrEmpty(model.ReturnUrl) ? model.ReturnUrl : "~/");
+                }
+
+                var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
+                var errors = string.Join(", ", result.Errors.Select(error => error.Description));
+                foreach (var identityError in result.Errors)
+                {
+                    ModelState.AddModelError(identityError.Code, identityError.Description);
+                }
+                await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, errors, clientId: context?.Client.ClientId));
+            }
+
+            var vm = BuildSignupViewModel(model);
+            // If we got this far, something failed, redisplay form
+            return View(vm);
+        }
 
         /// <summary>
         /// Show logout page
@@ -177,7 +283,7 @@ namespace Auth.Quickstart.Account
             // build a model so the logged out page knows what to display
             var vm = await BuildLoggedOutViewModelAsync(model.LogoutId);
 
-            if (User?.Identity.IsAuthenticated == true)
+            if (User?.Identity?.IsAuthenticated == true)
             {
                 // delete local authentication cookie
                 await _signInManager.SignOutAsync();
@@ -223,7 +329,7 @@ namespace Auth.Quickstart.Account
                 {
                     EnableLocalLogin = local,
                     ReturnUrl = returnUrl,
-                    Username = context?.LoginHint,
+                    Login = context?.LoginHint,
                 };
 
                 if (!local)
@@ -264,15 +370,32 @@ namespace Auth.Quickstart.Account
                 AllowRememberLogin = AccountOptions.AllowRememberLogin,
                 EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
                 ReturnUrl = returnUrl,
-                Username = context?.LoginHint,
+                Login = context?.LoginHint,
                 ExternalProviders = providers.ToArray()
             };
         }
+        private SignupViewModel BuildSignupViewModel(string returnUrl) =>
+            new()
+            {
+                ReturnUrl = returnUrl,
+                Username = string.Empty,
+                Password = string.Empty,
+                Email = string.Empty
+            };
+
+        private SignupViewModel BuildSignupViewModel(SignupInputModel model) =>
+            new()
+            {
+                ReturnUrl = model.ReturnUrl,
+                Username = model.Username,
+                Password = model.Password,
+                Email = model.Email
+            };
 
         private async Task<LoginViewModel> BuildLoginViewModelAsync(LoginInputModel model)
         {
             var vm = await BuildLoginViewModelAsync(model.ReturnUrl);
-            vm.Username = model.Username;
+            vm.Login = model.Login;
             vm.RememberLogin = model.RememberLogin;
             return vm;
         }

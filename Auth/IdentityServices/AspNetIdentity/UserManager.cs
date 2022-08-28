@@ -24,7 +24,7 @@ public class UserManager : UserManager<User>
 
         if (userExists)
         {
-            Log.Debug($"User '{user.Name} - {user.Email}' already exists");
+            Log.Debug($"User '{user.UserName} - {user.Email}' already exists");
 
             return IdentityResult.Success;
         }
@@ -35,7 +35,7 @@ public class UserManager : UserManager<User>
 
         if (result.Succeeded)
         {
-            Log.Debug($"Created new user: '{user.Name} - {user.Email}'");
+            Log.Debug($"Created new user: '{user.UserName} - {user.Email}'");
         }
         else
         {
@@ -59,7 +59,7 @@ public class UserManager : UserManager<User>
         if (!result.Succeeded)
         {
             var errors = string.Join("\n", result.Errors.Select(x => x.Description));
-            Log.Debug($"Could not add claims to user '{user.Name} - {user.Email}': {errors}");
+            Log.Debug($"Could not add claims to user '{user.UserName} - {user.Email}': {errors}");
         }
 
         return result;
